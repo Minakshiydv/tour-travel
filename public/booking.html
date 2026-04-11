@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luxury Booking</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
+body{
+  height:100vh;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Glass Card */
+.container{
+  width:420px;
+  padding:25px;
+  border-radius:20px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.5);
+  color:#fff;
+}
+
+/* Heading */
+h3{
+  text-align:center;
+  margin-bottom:15px;
+  font-weight:500;
+}
+
+/* Inputs */
+.input-box{
+  position:relative;
+  margin:15px 0;
+}
+
+.input-box input,
+.input-box select{
+  width:100%;
+  padding:12px;
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.3);
+  border-radius:10px;
+  color:#fff;
+  outline:none;
+}
+
+.input-box label{
+  position:absolute;
+  top:50%;
+  left:12px;
+  transform:translateY(-50%);
+  color:#aaa;
+  font-size:14px;
+  pointer-events:none;
+  transition:0.3s;
+}
+
+/* Floating label */
+.input-box input:focus + label,
+.input-box input:valid + label,
+.input-box select:focus + label{
+  top:-8px;
+  font-size:12px;
+  color:#00f2fe;
+}
+
+/* Buttons */
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#00f2fe,#4facfe);
+  color:#000;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+
+/* Steps */
+.step{display:none;}
+.step.active{display:block;}
+
+/* Navigation */
+.btns{
+  display:flex;
+  gap:10px;
+}
+
+.btns button{
+  width:50%;
+}
+.input-box select option {
+  color: #000;
+  background: #fff;
+  padding: 10px;
+}
+
+/* Price */
+#totalPrice,#finalPrice{
+  text-align:center;
+  margin-top:10px;
+  color:#00ffae;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<form id="bookingForm">
+
+<!-- STEP 1 -->
+<div class="step active">
+<h3>👤 Your Name</h3>
+
+<div class="input-box">
+<input type="text" required>
+<label>First Name</label>
+</div>
+
+<div class="input-box">
+<input type="text" required>
+<label>Last Name</label>
+</div>
+
+<button type="button" onclick="nextStep()">Next ➡️</button>
+</div>
+
+<!-- STEP 2 -->
+<div class="step">
+<h3>📞 Contact</h3>
+
+<div class="input-box">
+<input type="email" required>
+<label>Email</label>
+</div>
+
+<div class="input-box">
+<input type="tel" required>
+<label>Phone</label>
+</div>
+
+<div class="btns">
+<button type="button" onclick="prevStep()">Back</button>
+<button type="button" onclick="nextStep()">Next</button>
+</div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step">
+<h3>🌍 Destination</h3>
+
+<div class="input-box">
+<select required>
+<option value=""></option>
+
+<!-- ALL INDIA POPULAR -->
+<option>Delhi</option>
+<option>Goa</option>
+<option>Manali</option>
+<option>Shimla</option>
+<option>Jaipur</option>
+<option>Udaipur</option>
+<option>Jaisalmer</option>
+<option>Mumbai</option>
+<option>Pune</option>
+<option>Kerala</option>
+<option>Kochi</option>
+<option>Munnar</option>
+<option>Darjeeling</option>
+<option>Gangtok</option>
+<option>Leh Ladakh</option>
+<option>Rishikesh</option>
+<option>Haridwar</option>
+<option>Varanasi</option>
+<option>Agra</option>
+<option>Amritsar</option>
+<option>Chandigarh</option>
+<option>Bangalore</option>
+<option>Hyderabad</option>
+<option>Chennai</option>
+<option>Kolkata</option>
+<option>Andaman</option>
+<option>Lakshadweep</option>
+
+</select>
+<label>Select Destination</label>
+</div>
+
+<div class="btns">
+<button type="button" onclick="prevStep()">Back</button>
+<button type="button" onclick="nextStep()">Next</button>
+</div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step">
+<h3>🚗 Travel Plan</h3>
+
+<div class="input-box">
+<select id="vehicle">
+<option value="0"></option>
+<option value="6000">Innova Crysta ₹6000/day</option>
+<option value="6500">Hycross ₹6500/day</option>
+</select>
+<label>Select Vehicle</label>
+</div>
+
+<div class="input-box">
+<input type="number" id="days" required>
+<label>Days</label>
+</div>
+
+<div class="input-box">
+<input type="number" id="km" required>
+<label>Total KM</label>
+</div>
+
+<h4 id="totalPrice">Total: ₹0</h4>
+
+<div class="btns">
+<button type="button" onclick="prevStep()">Back</button>
+<button type="button" onclick="nextStep()">Next</button>
+</div>
+</div>
+
+<!-- STEP 5 -->
+<div class="step">
+<h3>💳 Payment</h3>
+
+<div class="input-box">
+<select required>
+<option value=""></option>
+<option>UPI / Card</option>
+<option>Cash</option>
+</select>
+<label>Payment Method</label>
+</div>
+
+<h4 id="finalPrice">Final: ₹0</h4>
+
+<div class="btns">
+<button type="button" onclick="prevStep()">Back</button>
+<button type="submit">Confirm 🚀</button>
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
