@@ -19,48 +19,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     new Swiper(".heroSwiper", {
       loop: true,
-      autoplay: { delay: 4000, disableOnInteraction: false },
-      speed: 1000,
+      autoplay: { delay: 4000 },
       pagination: { el: ".swiper-pagination", clickable: true },
     });
 
     new Swiper(".aboutSwiper", {
       loop: true,
-      autoplay: { delay: 4000, disableOnInteraction: false },
+      autoplay: { delay: 4000 },
       pagination: { el: ".swiper-pagination", clickable: true },
     });
 
     new Swiper(".reviewSwiper", {
       loop: true,
-      autoplay: { delay: 3000, disableOnInteraction: false },
-      speed: 800,
-      spaceBetween: 20,
+      autoplay: { delay: 3000 },
       pagination: { el: ".reviewSwiper .swiper-pagination", clickable: true },
     });
   }
 
   // =======================
-  // SMOOTH SCROLL
+  // STEP FORM
   // =======================
-  document.querySelectorAll("nav a").forEach(a => {
-    a.addEventListener("click", function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
-      if (target) target.scrollIntoView({ behavior: "smooth" });
-    });
-  });
-
-  // =======================
-  // EMAILJS INIT
-  // =======================
-  if (typeof emailjs !== "undefined") {
-    emailjs.init("EBwAazD16Vf8N6gvL");
-  } else {
-    console.error("EmailJS not loaded");
-  }
-
-  const bookingForm = document.getElementById("bookingForm");
-
   let currentStep = 0;
   const steps = document.querySelectorAll(".step");
 
@@ -69,17 +47,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.nextStep = function () {
-    if (currentStep < steps.length - 1) {
-      currentStep++;
-      showStep(currentStep);
+    let inputs = steps[currentStep].querySelectorAll("input, select");
+    let valid = true;
+
+    inputs.forEach(input => {
+      if (!input.value) valid = false;
+    });
+
+    if (!valid) {
+      alert("⚠️ Fill all fields");
+      return;
     }
+
+    currentStep++;
+    showStep(currentStep);
   };
 
   window.prevStep = function () {
-    if (currentStep > 0) {
-      currentStep--;
-      showStep(currentStep);
-    }
+    currentStep--;
+    showStep(currentStep);
   };
 
   // =======================
@@ -88,28 +74,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function calculatePrice() {
     const vehicle = parseInt(document.getElementById("vehicle")?.value) || 0;
     const days = parseInt(document.getElementById("days")?.value) || 0;
-    const km = parseInt(document.getElementById("km")?.value) || 0;
 
-    const limit = 250 * days;
-    const extra = km > limit ? km - limit : 0;
+    const total = vehicle * days;
 
-    const total = (vehicle * days) + (extra * 22);
-
-    if (document.getElementById("totalPrice")) {
-      document.getElementById("totalPrice").innerText = "Total: ₹" + total;
-    }
-
-    if (document.getElementById("finalPrice")) {
-      document.getElementById("finalPrice").innerText = "Final: ₹" + total;
-    }
+    document.getElementById("finalPrice").innerText = "Final: ₹" + total;
 
     return total;
   }
 
-  ["vehicle", "days", "km"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("input", calculatePrice);
+  ["vehicle", "days"].forEach(id => {
+    document.getElementById(id)?.addEventListener("change", calculatePrice);
   });
+
+  calculatePrice();
 
   // =======================
   // EMAIL VALIDATION
@@ -119,100 +96,114 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =======================
-  // EMAIL SEND (FIXED)
+  // OTP SEND
   // =======================
-  function sendEmail(status, paymentId = "") {
+  window.sendOTP = function () {
+    const email = document.getElementById("email").value;
 
-    const data = {
-      name: (document.getElementById("fname")?.value || "") + " " + (document.getElementById("lname")?.value || ""),
-      email: document.getElementById("email")?.value,
-      phone: document.getElementById("phone")?.value,
-      tour: document.getElementById("tour")?.value,
-      amount: calculatePrice(),
-      status: status,
-      payment_id: paymentId || "N/A"
-    };
+    if (!validateEmail(email)) {
+      alert("Enter valid email");
+      return;
+    }
 
-    if (typeof emailjs === "undefined") return;
-
-    // CUSTOMER EMAIL
-    emailjs.send("service_9yewgrk", "template_xom4y32", {
-      ...data,
-      to_email: data.email
-    }).catch(err => console.error("Customer email error:", err));
-
-    // OWNER EMAIL (SAFE FIX)
-    emailjs.send("service_9yewgrk", "template_xom4y32", {
-      ...data,
-      to_email: "yourmail@gmail.com"
-    }).catch(err => console.error("Owner email error:", err));
-  }
+    fetch("http://localhost:3000/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message));
+  };
 
   // =======================
-  // RAZORPAY
+  // OTP VERIFY
   // =======================
-  function openRazorpay(amount) {
+  window.verifyOTP = function () {
+    const otp = document.getElementById("otp").value;
 
-    const options = {
-      key: "rzp_live_SbhI7uVjasgo07",
-      amount: amount * 100,
-      currency: "INR",
-      name: "Travel Booking",
-      description: "Tour Payment",
-
-      handler: function (response) {
-        alert("🎉 Payment Successful");
-
-        sendEmail("Paid", response.razorpay_payment_id);
-
-        if (bookingForm) bookingForm.reset();
-
-        currentStep = 0;
-        showStep(currentStep);
-      }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-  }
-
-  // =======================
-  // FORM SUBMIT
-  // =======================
-  if (bookingForm) {
-
-    bookingForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const email = document.getElementById("email").value;
-      const payment = document.getElementById("payment")?.value;
-      const total = calculatePrice();
-
-      if (!validateEmail(email)) {
-        alert("Invalid Email");
-        return;
-      }
-
-      if (!payment) {
-        alert("Select payment method");
-        return;
-      }
-
-      if (payment === "cash") {
-        alert("Booking Confirmed (Cash)");
-        sendEmail("Cash");
-
-        bookingForm.reset();
-        currentStep = 0;
-        showStep(currentStep);
-        return;
-      }
-
-      if (payment === "upi") {
-        openRazorpay(total);
+    fetch("http://localhost:3000/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ otp })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("OTP Verified ✅");
+        nextStep();
+      } else {
+        alert("Wrong OTP ❌");
       }
     });
-  }
+  };
+
+  // =======================
+  // BOOKING (CASH + UPI)
+  // =======================
+  window.bookNow = function () {
+
+    const email = document.getElementById("email").value;
+    const payment = document.getElementById("payment").value;
+    const amount = calculatePrice();
+
+    if (!validateEmail(email)) {
+      alert("Invalid email");
+      return;
+    }
+
+    if (!payment) {
+      alert("Select payment method");
+      return;
+    }
+
+    // ===== CASH =====
+    if (payment === "cash") {
+
+      fetch("http://localhost:3000/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("✅ Booking Confirmed (Cash)");
+        location.reload();
+      });
+
+    }
+
+    // ===== UPI (RAZORPAY) =====
+    if (payment === "upi") {
+
+      const options = {
+        key: "rzp_live_SbhI7uVjasgo07", // 👉 apni key daalna
+        amount: amount * 100,
+        currency: "INR",
+        name: "Travel Booking",
+        description: "Payment",
+
+        handler: function () {
+
+          alert("🎉 Payment Successful");
+
+          fetch("http://localhost:3000/book", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+          })
+          .then(res => res.json())
+          .then(data => {
+            alert("Booking Confirmed + Email Sent ✅");
+            location.reload();
+          });
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    }
+  };
 
   showStep(currentStep);
+
 });

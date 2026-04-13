@@ -1,7 +1,9 @@
 const express = require("express");
 const path = require("path");
+const nodemailer = require("nodemailer");
+const session = require("express-session");
+const cors = require("cors");
 
-// agar db.js hai to import (tumhare project me hai)
 const Booking = require("./db");
 
 const app = express();
@@ -9,11 +11,18 @@ const app = express();
 // ======================
 // MIDDLEWARE
 // ======================
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(session({
+  secret: "otp_secret",
+  resave: false,
+  saveUninitialized: true
+}));
+
 // ======================
-// PUBLIC FOLDER (FRONTEND)
+// STATIC FILES
 // ======================
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -25,32 +34,96 @@ app.get("/", (req, res) => {
 });
 
 // ======================
-// BOOKING API
+// EMAIL CONFIG
 // ======================
-app.post("/submit-booking", async (req, res) => {
-  try {
-    const data = new Booking(req.body);
-    await data.save();
-
-    res.status(200).send("Booking Saved Successfully ✅");
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error ❌ Booking not saved");
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "rdrtourandtravels@gmail.com",
+    pass: "dtpn gjfw nctz qzj"
   }
 });
 
 // ======================
-// HEALTH CHECK ROUTE (Render ke liye useful)
+// SEND OTP
 // ======================
-app.get("/health", (req, res) => {
-  res.send("Server is healthy ✅");
+app.post("/send-otp", async (req, res) => {
+  try {
+    const email = req.body.email;
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    console.log("OTP sent to:", email);
+    console.log("OTP:", otp);
+
+    req.session.otp = otp;
+    req.session.email = email;
+
+    await transporter.sendMail({
+      from: "rdrtourandtravels@gmail.com",
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP is: ${otp}`
+    });
+
+    res.json({ message: "OTP sent successfully ✅" });
+
+  } catch (error) {
+    console.log("OTP Error:", error);
+    res.status(500).json({ message: "OTP not sent ❌" });
+  }
+});
+
+// ======================
+// VERIFY OTP
+// ======================
+app.post("/verify-otp", (req, res) => {
+  const { otp } = req.body;
+
+  if (otp == req.session.otp) {
+    res.json({ success: true, message: "Verified ✅" });
+  } else {
+    res.json({ success: false, message: "Invalid OTP ❌" });
+  }
+});
+
+// ======================
+// BOOKING EMAIL (FINAL FIXED)
+// ======================
+app.post("/book", async (req, res) => {
+  try {
+    console.log("🔥 BOOK ROUTE HIT");
+
+    const email = req.body.email || req.session.email;
+
+    console.log("BOOK EMAIL:", email);
+
+    if (!email) {
+      return res.status(400).json({ message: "Email missing ❌" });
+    }
+
+    await transporter.sendMail({
+      from: "rdrtourandtravels@gmail.com",
+      to: email,
+      subject: "Booking Confirmed 🎉",
+      text: "Your booking has been successfully confirmed!"
+    });
+
+    console.log("📩 Booking email sent");
+
+    res.json({ message: "Booking email sent ✅" });
+
+  } catch (error) {
+    console.log("Booking Error:", error);
+    res.status(500).json({ message: "Booking failed ❌" });
+  }
 });
 
 // ======================
 // SERVER START
 // ======================
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

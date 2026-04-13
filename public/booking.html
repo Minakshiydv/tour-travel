@@ -121,6 +121,7 @@ button:hover{
   margin-top:10px;
   color:#00ffae;
   font-weight:bold;
+
 }
 </style>
 </head>
@@ -132,147 +133,161 @@ button:hover{
 <form id="bookingForm">
 
 <!-- STEP 1 -->
+
+<!-- STEP 1 -->
 <div class="step active">
-<h3>👤 Your Name</h3>
+  <h3>👤 Your Name</h3>
 
-<div class="input-box">
-<input type="text" required>
-<label>First Name</label>
+  <div class="input-box">
+    <input type="text" id="firstName" required>
+    <label>First Name</label>
+  </div>
+
+  <div class="input-box">
+    <input type="text" id="lastName" required>
+    <label>Last Name</label>
+  </div>
+
+  <button type="button" onclick="nextStep()">Next ➡️</button>
 </div>
 
-<div class="input-box">
-<input type="text" required>
-<label>Last Name</label>
-</div>
-
-<button type="button" onclick="nextStep()">Next ➡️</button>
-</div>
 
 <!-- STEP 2 -->
 <div class="step">
-<h3>📞 Contact</h3>
+  <h3>📞 Contact</h3>
 
-<div class="input-box">
-<input type="email" required>
-<label>Email</label>
-</div>
+  <!-- EMAIL -->
+  <div class="input-box">
+    <input type="email" id="email" required>
+    <label>Email</label>
+  </div>
 
-<div class="input-box">
-<input type="tel" required>
-<label>Phone</label>
-</div>
+  <!-- SEND OTP BUTTON -->
+   <button onclick="sendOTP()">Send OTP</button>
 
-<div class="btns">
-<button type="button" onclick="prevStep()">Back</button>
-<button type="button" onclick="nextStep()">Next</button>
-</div>
+
+  <!-- OTP INPUT -->
+  <div class="input-box">
+    <input type="text" id="otp" placeholder="Enter OTP">
+  </div>
+
+  <!-- VERIFY BUTTON -->
+   <button onclick="verifyOTP()">Verify OTP</button>
+  
+
+  <!-- PHONE -->
+  <div class="input-box">
+    <input type="tel" id="phone" required>
+    <label>Phone</label>
+  </div>
+
+  <div class="btns">
+    <button type="button" onclick="prevStep()">Back</button>
+    <button type="button" onclick="nextStep()">Next ➡️</button>
+  </div>
 </div>
 
 <!-- STEP 3 -->
+
 <div class="step">
-<h3>🌍 Destination</h3>
+  <h3>🌍 Destination</h3>
 
-<div class="input-box">
-<select required>
-<option value=""></option>
+  <div class="input-box">
+    <select id="destination" required>
+      <option value="">Select Destination</option>
 
-<!-- ALL INDIA POPULAR -->
-<option>Delhi</option>
-<option>Goa</option>
-<option>Manali</option>
-<option>Shimla</option>
-<option>Jaipur</option>
-<option>Udaipur</option>
-<option>Jaisalmer</option>
-<option>Mumbai</option>
-<option>Pune</option>
-<option>Kerala</option>
-<option>Kochi</option>
-<option>Munnar</option>
-<option>Darjeeling</option>
-<option>Gangtok</option>
-<option>Leh Ladakh</option>
-<option>Rishikesh</option>
-<option>Haridwar</option>
-<option>Varanasi</option>
-<option>Agra</option>
-<option>Amritsar</option>
-<option>Chandigarh</option>
-<option>Bangalore</option>
-<option>Hyderabad</option>
-<option>Chennai</option>
-<option>Kolkata</option>
-<option>Andaman</option>
-<option>Lakshadweep</option>
+      <option>Delhi</option>
+      <option>Goa</option>
+      <option>Manali</option>
+      <option>Shimla</option>
+      <option>Jaipur</option>
+      <option>Udaipur</option>
+      <option>Jaisalmer</option>
+      <option>Mumbai</option>
+      <option>Pune</option>
+      <option>Kerala</option>
+      <option>Kochi</option>
+      <option>Munnar</option>
+      <option>Darjeeling</option>
+      <option>Gangtok</option>
+      <option>Leh Ladakh</option>
+      <option>Rishikesh</option>
+      <option>Haridwar</option>
+      <option>Varanasi</option>
+      <option>Agra</option>
+      <option>Amritsar</option>
+      <option>Chandigarh</option>
+      <option>Bangalore</option>
+      <option>Hyderabad</option>
+      <option>Chennai</option>
+      <option>Kolkata</option>
+      <option>Andaman</option>
+      <option>Lakshadweep</option>
 
-</select>
-<label>Select Destination</label>
+    </select>
+    <label>Select Destination</label>
+  </div>
+
+  <div class="btns">
+    <button type="button" onclick="prevStep()">Back</button>
+    <button type="button" onclick="nextStep()">Next</button>
+  </div>
 </div>
 
-<div class="btns">
-<button type="button" onclick="prevStep()">Back</button>
-<button type="button" onclick="nextStep()">Next</button>
-</div>
-</div>
 
 <!-- STEP 4 -->
 <div class="step">
-<h3>🚗 Travel Plan</h3>
+  <h3>🚗 Travel Plan</h3>
 
-<div class="input-box">
-<select id="vehicle">
-<option value="0"></option>
-<option value="6000">Innova Crysta ₹6000/day</option>
-<option value="6500">Hycross ₹6500/day</option>
-</select>
-<label>Select Vehicle</label>
+  <div class="input-box">
+    <select id="vehicle" required>
+      <option value="0">Select Vehicle</option>
+      <option value="6000">Innova Crysta ₹6000/day</option>
+      <option value="6500">Hycross ₹6500/day</option>
+      <option value="4000">Swift ₹4000/day</option>
+    </select>
+    <label>Select Vehicle</label>
+  </div>
+
+  <div class="input-box">
+    <input type="number" id="days" required>
+    <label>Days</label>
+  </div>
+
+  <div class="btns">
+    <button type="button" onclick="prevStep()">Back</button>
+    <button type="button" onclick="nextStep()">Next</button>
+  </div>
 </div>
 
-<div class="input-box">
-<input type="number" id="days" required>
-<label>Days</label>
-</div>
-
-<div class="input-box">
-<input type="number" id="km" required>
-<label>Total KM</label>
-</div>
-
-<h4 id="totalPrice">Total: ₹0</h4>
-
-<div class="btns">
-<button type="button" onclick="prevStep()">Back</button>
-<button type="button" onclick="nextStep()">Next</button>
-</div>
-</div>
 
 <!-- STEP 5 -->
 <div class="step">
-<h3>💳 Payment</h3>
+  <h3>💳 Payment</h3>
 
-<div class="input-box">
-<select required>
-<option value=""></option>
-<option>UPI / Card</option>
-<option>Cash</option>
-</select>
-<label>Payment Method</label>
+  <div class="input-box">
+    <select id="payment" required>
+      <option value="">Select Payment Method</option>
+      <option value="upi">UPI / Card</option>
+      <option value="cash">Cash</option>
+    </select>
+    <label>Payment Method</label>
+  </div>
+
+
+  <p id="finalPrice">Final: ₹0</p>
+
+  <div class="btns">
+    <button type="button" onclick="prevStep()">Back</button>
+    <button type="button" onclick="bookNow()">Confirm 🚀</button>
+  </div>
 </div>
-
-<h4 id="finalPrice">Final: ₹0</h4>
-
-<div class="btns">
-<button type="button" onclick="prevStep()">Back</button>
-<button type="submit">Confirm 🚀</button>
-</div>
-
-</div>
-
 </form>
 
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>
+
