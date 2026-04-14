@@ -96,7 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.sendOTP = async function () {
     try {
-      const email = document.getElementById("email").value;
+      const emailEl = document.getElementById("email");
+      if (!emailEl) return;
+
+      const email = emailEl.value.trim();
 
       if (!validateEmail(email)) {
         alert("Enter valid email");
@@ -114,13 +117,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        alert(data.message || "OTP failed ❌");
+        return;
+      }
 
-      alert(data.message);
+      alert(data.message || "OTP sent ✅");
 
     } catch (err) {
-      console.log(err);
-      alert("OTP failed ❌");
+      console.log("OTP Error:", err);
+      alert("Server error ❌");
     }
   };
 
@@ -129,7 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.verifyOTP = async function () {
     try {
-      const otp = document.getElementById("otp").value;
+      const otpEl = document.getElementById("otp");
+      if (!otpEl) return;
+
+      const otp = otpEl.value.trim();
 
       if (!otp) {
         alert("Enter OTP");
@@ -151,11 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("OTP Verified ✅");
         nextStep();
       } else {
-        alert("Wrong OTP ❌");
+        alert(data.message || "Wrong OTP ❌");
       }
 
     } catch (err) {
-      console.log(err);
+      console.log("Verify Error:", err);
       alert("Verification failed ❌");
     }
   };
@@ -165,8 +174,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.bookNow = async function () {
     try {
-      const email = document.getElementById("email").value;
-      const payment = document.getElementById("payment").value;
+      const emailEl = document.getElementById("email");
+      const paymentEl = document.getElementById("payment");
+
+      if (!emailEl || !paymentEl) return;
+
+      const email = emailEl.value.trim();
+      const payment = paymentEl.value;
       const amount = calculatePrice();
 
       if (!validateEmail(email)) {
@@ -223,8 +237,9 @@ document.addEventListener("DOMContentLoaded", () => {
               alert("🎉 Payment + Booking Success");
               location.reload();
 
-            } catch {
-              alert("Booking failed ❌");
+            } catch (err) {
+              console.log(err);
+              alert("Booking failed after payment ❌");
             }
           }
         };
@@ -233,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
     } catch (err) {
-      console.log(err);
+      console.log("Booking Error:", err);
       alert("Something went wrong ❌");
     }
   };
