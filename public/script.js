@@ -1,6 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // =======================
+  // BASE URL (IMPORTANT)
+  // =======================
+  const BASE_URL = "https://rdrtravels-backend.onrender.com";
+
+  // =======================
   // MOBILE MENU
   // =======================
   const menuToggle = document.querySelector(".menu-toggle");
@@ -96,56 +101,63 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =======================
-  // OTP SEND
+  // SEND OTP
   // =======================
   window.sendOTP = function () {
-  const email = document.getElementById("email").value;
+    const email = document.getElementById("email").value;
 
-  if (!validateEmail(email)) {
-    alert("Enter valid email");
-    return;
-  }
+    if (!validateEmail(email)) {
+      alert("Enter valid email");
+      return;
+    }
 
-  fetch("https://rdrtravels-backend.onrender.com/send-otp", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ email })
-  })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
+    fetch(`${BASE_URL}/send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
     })
-    .catch(error => {
-      console.log("Error:", error);
-      alert("Server not reachable or OTP failed");
-    });
-};
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+      })
+      .catch(error => {
+        console.log("Error:", error);
+        alert("Server not reachable");
+      });
+  };
+
   // =======================
-  // OTP VERIFY
+  // VERIFY OTP
   // =======================
   window.verifyOTP = function () {
     const otp = document.getElementById("otp").value;
 
-    fetch("http://localhost:3000/verify-otp", {
+    fetch(`${BASE_URL}/verify-otp`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ otp })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("OTP Verified ✅");
-        nextStep();
-      } else {
-        alert("Wrong OTP ❌");
-      }
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("OTP Verified ✅");
+          nextStep();
+        } else {
+          alert("Wrong OTP ❌");
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        alert("Verification failed");
+      });
   };
 
   // =======================
-  // BOOKING (CASH + UPI)
+  // BOOKING FUNCTION
   // =======================
   window.bookNow = function () {
 
@@ -163,27 +175,36 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ===== CASH =====
+    // =======================
+    // CASH BOOKING
+    // =======================
     if (payment === "cash") {
 
-      fetch("http://localhost:3000/book", {
+      fetch(`${BASE_URL}/book`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ email })
       })
-      .then(res => res.json())
-      .then(data => {
-        alert("✅ Booking Confirmed (Cash)");
-        location.reload();
-      });
-
+        .then(res => res.json())
+        .then(data => {
+          alert("✅ Booking Confirmed (Cash)");
+          location.reload();
+        })
+        .catch(err => {
+          console.log(err);
+          alert("Booking failed");
+        });
     }
 
-    // ===== UPI (RAZORPAY) =====
+    // =======================
+    // UPI PAYMENT (RAZORPAY)
+    // =======================
     if (payment === "upi") {
 
       const options = {
-        key: "rzp_live_SbhI7uVjasgo07", // 👉 apni key daalna
+        key: "rzp_live_SbhI7uVjasgo07",
         amount: amount * 100,
         currency: "INR",
         name: "Travel Booking",
@@ -193,16 +214,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
           alert("🎉 Payment Successful");
 
-          fetch("http://localhost:3000/book", {
+          fetch(`${BASE_URL}/book`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json"
+            },
             body: JSON.stringify({ email })
           })
-          .then(res => res.json())
-          .then(data => {
-            alert("Booking Confirmed + Email Sent ✅");
-            location.reload();
-          });
+            .then(res => res.json())
+            .then(data => {
+              alert("Booking Confirmed + Email Sent ✅");
+              location.reload();
+            })
+            .catch(err => {
+              console.log(err);
+              alert("Booking failed after payment");
+            });
         }
       };
 
