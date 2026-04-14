@@ -48,10 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const steps = document.querySelectorAll(".step");
 
   function showStep(n) {
+    if (!steps.length) return;
     steps.forEach((s, i) => s.classList.toggle("active", i === n));
   }
 
   window.nextStep = function () {
+    if (!steps.length) return;
+
     let inputs = steps[currentStep].querySelectorAll("input, select");
     let valid = true;
 
@@ -69,20 +72,27 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.prevStep = function () {
+    if (!steps.length) return;
     currentStep--;
     showStep(currentStep);
   };
 
   // =======================
-  // PRICE CALCULATION
+  // PRICE CALCULATION (FIXED)
   // =======================
   function calculatePrice() {
-    const vehicle = parseInt(document.getElementById("vehicle")?.value) || 0;
-    const days = parseInt(document.getElementById("days")?.value) || 0;
+    const vehicleEl = document.getElementById("vehicle");
+    const daysEl = document.getElementById("days");
+
+    if (!vehicleEl || !daysEl) return 0;
+
+    const vehicle = parseInt(vehicleEl.value) || 0;
+    const days = parseInt(daysEl.value) || 0;
 
     const total = vehicle * days;
 
     const priceBox = document.getElementById("finalPrice");
+
     if (priceBox) {
       priceBox.innerText = "Final: ₹" + total;
     }
@@ -90,11 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return total;
   }
 
-  ["vehicle", "days"].forEach(id => {
-    document.getElementById(id)?.addEventListener("change", calculatePrice);
-  });
+  const vehicleInput = document.getElementById("vehicle");
+  const daysInput = document.getElementById("days");
 
-  calculatePrice();
+  if (vehicleInput && daysInput) {
+    vehicleInput.addEventListener("change", calculatePrice);
+    daysInput.addEventListener("input", calculatePrice);
+    calculatePrice(); // safe call
+  }
 
   // =======================
   // EMAIL VALIDATION
@@ -108,7 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.sendOTP = async function () {
     try {
-      const email = document.getElementById("email").value;
+      const emailEl = document.getElementById("email");
+      if (!emailEl) return;
+
+      const email = emailEl.value;
 
       if (!validateEmail(email)) {
         alert("Enter valid email");
@@ -124,9 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ email })
       });
 
-      if (!res.ok) throw new Error("Server error");
-
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "OTP failed");
+      }
+
       alert(data.message);
 
     } catch (err) {
@@ -140,7 +159,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.verifyOTP = async function () {
     try {
-      const otp = document.getElementById("otp").value;
+      const otpEl = document.getElementById("otp");
+      if (!otpEl) return;
+
+      const otp = otpEl.value;
 
       if (!otp) {
         alert("Enter OTP");
@@ -155,8 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
         credentials: "include",
         body: JSON.stringify({ otp })
       });
-
-      if (!res.ok) throw new Error("Server error");
 
       const data = await res.json();
 
@@ -178,8 +198,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.bookNow = async function () {
     try {
-      const email = document.getElementById("email").value;
-      const payment = document.getElementById("payment").value;
+      const emailEl = document.getElementById("email");
+      const paymentEl = document.getElementById("payment");
+
+      if (!emailEl || !paymentEl) return;
+
+      const email = emailEl.value;
+      const payment = paymentEl.value;
       const amount = calculatePrice();
 
       if (!validateEmail(email)) {
@@ -192,7 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // =======================
       // CASH
+      // =======================
       if (payment === "cash") {
 
         const res = await fetch(`${BASE_URL}/book`, {
@@ -204,13 +231,15 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ email })
         });
 
-        if (!res.ok) throw new Error("Booking failed");
+        if (!res.ok) throw new Error();
 
         alert("✅ Booking Confirmed");
         location.reload();
       }
 
+      // =======================
       // UPI
+      // =======================
       if (payment === "upi") {
 
         const options = {
