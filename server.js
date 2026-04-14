@@ -3,22 +3,37 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const session = require("express-session");
 const cors = require("cors");
-
 const Booking = require("./db");
 
 const app = express();
 
 // ======================
-// MIDDLEWARE
+// CORS FIX (IMPORTANT)
 // ======================
-app.use(cors());
+app.use(cors({
+  origin: "https://rdrtravels.in",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+app.options("*", cors());
+
+// ======================
+// BODY PARSER
+// ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ======================
+// SESSION (OTP STORAGE)
+// ======================
 app.use(session({
-  secret: "otp_secret",
+  secret: "otp_secret_key",
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    secure: false // set true only if HTTPS session issues come
+  }
 }));
 
 // ======================
@@ -49,15 +64,18 @@ const transporter = nodemailer.createTransport({
 // ======================
 app.post("/send-otp", async (req, res) => {
   try {
-    const email = req.body.email;
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email required ❌" });
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
 
-    console.log("OTP sent to:", email);
-    console.log("OTP:", otp);
-
     req.session.otp = otp;
     req.session.email = email;
+
+    console.log("OTP:", otp, "Email:", email);
 
     await transporter.sendMail({
       from: "rdrtourandtravels@gmail.com",
@@ -81,22 +99,18 @@ app.post("/verify-otp", (req, res) => {
   const { otp } = req.body;
 
   if (otp == req.session.otp) {
-    res.json({ success: true, message: "Verified ✅" });
+    return res.json({ success: true, message: "Verified ✅" });
   } else {
-    res.json({ success: false, message: "Invalid OTP ❌" });
+    return res.json({ success: false, message: "Invalid OTP ❌" });
   }
 });
 
 // ======================
-// BOOKING EMAIL (FINAL FIXED)
+// BOOKING EMAIL
 // ======================
 app.post("/book", async (req, res) => {
   try {
-    console.log("🔥 BOOK ROUTE HIT");
-
     const email = req.body.email || req.session.email;
-
-    console.log("BOOK EMAIL:", email);
 
     if (!email) {
       return res.status(400).json({ message: "Email missing ❌" });
@@ -109,8 +123,6 @@ app.post("/book", async (req, res) => {
       text: "Your booking has been successfully confirmed!"
     });
 
-    console.log("📩 Booking email sent");
-
     res.json({ message: "Booking email sent ✅" });
 
   } catch (error) {
@@ -122,8 +134,6 @@ app.post("/book", async (req, res) => {
 // ======================
 // SERVER START
 // ======================
-
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
