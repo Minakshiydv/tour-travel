@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // =======================
-  // BASE URL (IMPORTANT)
+  // BASE URL
   // =======================
-  const BASE_URL = "https://rdrtravels-backend.onrender.com";
+  const BASE_URL = "https://tour-travel1.onrender.com";
 
   // =======================
   // MOBILE MENU
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // =======================
-  // PRICE CALC
+  // PRICE CALCULATION
   // =======================
   function calculatePrice() {
     const vehicle = parseInt(document.getElementById("vehicle")?.value) || 0;
@@ -82,7 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const total = vehicle * days;
 
-    document.getElementById("finalPrice").innerText = "Final: ₹" + total;
+    const priceBox = document.getElementById("finalPrice");
+    if (priceBox) {
+      priceBox.innerText = "Final: ₹" + total;
+    }
 
     return total;
   }
@@ -116,15 +119,16 @@ document.addEventListener("DOMContentLoaded", () => {
       headers: {
         "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ email })
     })
       .then(res => res.json())
       .then(data => {
         alert(data.message);
       })
-      .catch(error => {
-        console.log("Error:", error);
-        alert("Server not reachable");
+      .catch(err => {
+        console.log(err);
+        alert("OTP failed ❌");
       });
   };
 
@@ -134,11 +138,17 @@ document.addEventListener("DOMContentLoaded", () => {
   window.verifyOTP = function () {
     const otp = document.getElementById("otp").value;
 
+    if (!otp) {
+      alert("Enter OTP");
+      return;
+    }
+
     fetch(`${BASE_URL}/verify-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
+      credentials: "include",
       body: JSON.stringify({ otp })
     })
       .then(res => res.json())
@@ -152,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(err => {
         console.log(err);
-        alert("Verification failed");
+        alert("Verification failed ❌");
       });
   };
 
@@ -185,16 +195,17 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify({ email })
       })
         .then(res => res.json())
-        .then(data => {
+        .then(() => {
           alert("✅ Booking Confirmed (Cash)");
           location.reload();
         })
         .catch(err => {
           console.log(err);
-          alert("Booking failed");
+          alert("Booking failed ❌");
         });
     }
 
@@ -219,16 +230,16 @@ document.addEventListener("DOMContentLoaded", () => {
             headers: {
               "Content-Type": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify({ email })
           })
-            .then(res => res.json())
-            .then(data => {
+            .then(() => {
               alert("Booking Confirmed + Email Sent ✅");
               location.reload();
             })
             .catch(err => {
               console.log(err);
-              alert("Booking failed after payment");
+              alert("Booking failed after payment ❌");
             });
         }
       };

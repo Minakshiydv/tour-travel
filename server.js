@@ -3,20 +3,21 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const session = require("express-session");
 const cors = require("cors");
-const Booking = require("./db");
 
 const app = express();
 
 // ======================
-// CORS FIX (IMPORTANT)
+// CORS (FINAL FIX)
 // ======================
 app.use(cors({
   origin: "https://rdrtravels.in",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
+  credentials: true
 }));
 
-app.options("*", cors());
+app.options("*", cors({
+  origin: "https://rdrtravels.in",
+  credentials: true
+}));
 
 // ======================
 // BODY PARSER
@@ -25,14 +26,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION (OTP STORAGE)
+// SESSION (IMPORTANT)
 // ======================
 app.use(session({
   secret: "otp_secret_key",
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false // set true only if HTTPS session issues come
+    secure: false, // keep false for now (Render + HTTP)
+    httpOnly: true
   }
 }));
 
