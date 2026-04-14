@@ -99,22 +99,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // OTP SEND
   // =======================
   window.sendOTP = function () {
-    const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value;
 
-    if (!validateEmail(email)) {
-      alert("Enter valid email");
-      return;
-    }
+  if (!validateEmail(email)) {
+    alert("Enter valid email");
+    return;
+  }
 
-    fetch("http://localhost:3000/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    })
+  fetch("https://rdrtravels-backend.onrender.com/send-otp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email })
+  })
     .then(res => res.json())
-    .then(data => alert(data.message));
-  };
-
+    .then(data => {
+      alert(data.message);
+    })
+    .catch(error => {
+      console.log("Error:", error);
+      alert("Server not reachable or OTP failed");
+    });
+};
   // =======================
   // OTP VERIFY
   // =======================
