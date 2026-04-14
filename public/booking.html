@@ -23,7 +23,6 @@ body{
   align-items:center;
 }
 
-/* Glass Card */
 .container{
   width:420px;
   padding:25px;
@@ -34,14 +33,12 @@ body{
   color:#fff;
 }
 
-/* Heading */
 h3{
   text-align:center;
   margin-bottom:15px;
   font-weight:500;
 }
 
-/* Inputs */
 .input-box{
   position:relative;
   margin:15px 0;
@@ -69,7 +66,6 @@ h3{
   transition:0.3s;
 }
 
-/* Floating label */
 .input-box input:focus + label,
 .input-box input:valid + label,
 .input-box select:focus + label{
@@ -78,7 +74,6 @@ h3{
   color:#00f2fe;
 }
 
-/* Buttons */
 button{
   width:100%;
   padding:12px;
@@ -96,11 +91,9 @@ button:hover{
   transform:scale(1.05);
 }
 
-/* Steps */
 .step{display:none;}
 .step.active{display:block;}
 
-/* Navigation */
 .btns{
   display:flex;
   gap:10px;
@@ -109,19 +102,17 @@ button:hover{
 .btns button{
   width:50%;
 }
+
 .input-box select option {
   color: #000;
   background: #fff;
-  padding: 10px;
 }
 
-/* Price */
 #totalPrice,#finalPrice{
   text-align:center;
   margin-top:10px;
   color:#00ffae;
   font-weight:bold;
-
 }
 </style>
 </head>
@@ -131,8 +122,6 @@ button:hover{
 <div class="container">
 
 <form id="bookingForm">
-
-<!-- STEP 1 -->
 
 <!-- STEP 1 -->
 <div class="step active">
@@ -151,31 +140,25 @@ button:hover{
   <button type="button" onclick="nextStep()">Next ➡️</button>
 </div>
 
-
 <!-- STEP 2 -->
 <div class="step">
   <h3>📞 Contact</h3>
 
-  <!-- EMAIL -->
   <div class="input-box">
     <input type="email" id="email" required>
     <label>Email</label>
   </div>
 
-  <!-- SEND OTP BUTTON -->
-   <button onclick="sendOTP()">Send OTP</button>
+  <!-- FIX: type="button" -->
+  <button type="button" onclick="sendOTP()">Send OTP</button>
 
-
-  <!-- OTP INPUT -->
   <div class="input-box">
     <input type="text" id="otp" placeholder="Enter OTP">
   </div>
 
-  <!-- VERIFY BUTTON -->
-   <button onclick="verifyOTP()">Verify OTP</button>
-  
+  <!-- FIX: type="button" -->
+  <button type="button" onclick="verifyOTP()">Verify OTP</button>
 
-  <!-- PHONE -->
   <div class="input-box">
     <input type="tel" id="phone" required>
     <label>Phone</label>
@@ -188,14 +171,12 @@ button:hover{
 </div>
 
 <!-- STEP 3 -->
-
 <div class="step">
   <h3>🌍 Destination</h3>
 
   <div class="input-box">
     <select id="destination" required>
       <option value="">Select Destination</option>
-
       <option>Delhi</option>
       <option>Goa</option>
       <option>Manali</option>
@@ -223,7 +204,6 @@ button:hover{
       <option>Kolkata</option>
       <option>Andaman</option>
       <option>Lakshadweep</option>
-
     </select>
     <label>Select Destination</label>
   </div>
@@ -234,14 +214,13 @@ button:hover{
   </div>
 </div>
 
-
 <!-- STEP 4 -->
 <div class="step">
   <h3>🚗 Travel Plan</h3>
 
   <div class="input-box">
     <select id="vehicle" required>
-      <option value="0">Select Vehicle</option>
+      <option value="">Select Vehicle</option>
       <option value="6000">Innova Crysta ₹6000/day</option>
       <option value="6500">Hycross ₹6500/day</option>
       <option value="4000">Swift ₹4000/day</option>
@@ -260,7 +239,6 @@ button:hover{
   </div>
 </div>
 
-
 <!-- STEP 5 -->
 <div class="step">
   <h3>💳 Payment</h3>
@@ -274,7 +252,6 @@ button:hover{
     <label>Payment Method</label>
   </div>
 
-
   <p id="finalPrice">Final: ₹0</p>
 
   <div class="btns">
@@ -282,12 +259,12 @@ button:hover{
     <button type="button" onclick="bookNow()">Confirm 🚀</button>
   </div>
 </div>
-</form>
 
+</form>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="script.js"></script>
+
 </body>
 </html>
-

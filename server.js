@@ -9,13 +9,26 @@ const app = express();
 // ======================
 // CORS (FINAL FIX)
 // ======================
+const allowedOrigins = [
+  "https://rdrtravels.in",
+  "https://tour-travel1.onrender.com"
+];
+
 app.use(cors({
-  origin: "https://rdrtravels.in",
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("CORS not allowed"), false);
+    }
+  },
   credentials: true
 }));
 
 app.options("*", cors({
-  origin: "https://rdrtravels.in",
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -33,7 +46,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false, // keep false for now (Render + HTTP)
+    secure: false,
     httpOnly: true
   }
 }));

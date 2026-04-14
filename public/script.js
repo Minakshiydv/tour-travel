@@ -106,146 +106,148 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   // SEND OTP
   // =======================
-  window.sendOTP = function () {
-    const email = document.getElementById("email").value;
+  window.sendOTP = async function () {
+    try {
+      const email = document.getElementById("email").value;
 
-    if (!validateEmail(email)) {
-      alert("Enter valid email");
-      return;
-    }
+      if (!validateEmail(email)) {
+        alert("Enter valid email");
+        return;
+      }
 
-    fetch(`${BASE_URL}/send-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({ email })
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-      })
-      .catch(err => {
-        console.log(err);
-        alert("OTP failed ❌");
-      });
-  };
-
-  // =======================
-  // VERIFY OTP
-  // =======================
-  window.verifyOTP = function () {
-    const otp = document.getElementById("otp").value;
-
-    if (!otp) {
-      alert("Enter OTP");
-      return;
-    }
-
-    fetch(`${BASE_URL}/verify-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({ otp })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert("OTP Verified ✅");
-          nextStep();
-        } else {
-          alert("Wrong OTP ❌");
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        alert("Verification failed ❌");
-      });
-  };
-
-  // =======================
-  // BOOKING FUNCTION
-  // =======================
-  window.bookNow = function () {
-
-    const email = document.getElementById("email").value;
-    const payment = document.getElementById("payment").value;
-    const amount = calculatePrice();
-
-    if (!validateEmail(email)) {
-      alert("Invalid email");
-      return;
-    }
-
-    if (!payment) {
-      alert("Select payment method");
-      return;
-    }
-
-    // =======================
-    // CASH BOOKING
-    // =======================
-    if (payment === "cash") {
-
-      fetch(`${BASE_URL}/book`, {
+      const res = await fetch(`${BASE_URL}/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         credentials: "include",
         body: JSON.stringify({ email })
-      })
-        .then(res => res.json())
-        .then(() => {
-          alert("✅ Booking Confirmed (Cash)");
-          location.reload();
-        })
-        .catch(err => {
-          console.log(err);
-          alert("Booking failed ❌");
-        });
+      });
+
+      if (!res.ok) throw new Error("Server error");
+
+      const data = await res.json();
+      alert(data.message);
+
+    } catch (err) {
+      console.log("OTP Error:", err);
+      alert("OTP failed ❌");
     }
+  };
 
-    // =======================
-    // UPI PAYMENT (RAZORPAY)
-    // =======================
-    if (payment === "upi") {
+  // =======================
+  // VERIFY OTP
+  // =======================
+  window.verifyOTP = async function () {
+    try {
+      const otp = document.getElementById("otp").value;
 
-      const options = {
-        key: "rzp_live_SbhI7uVjasgo07",
-        amount: amount * 100,
-        currency: "INR",
-        name: "Travel Booking",
-        description: "Payment",
+      if (!otp) {
+        alert("Enter OTP");
+        return;
+      }
 
-        handler: function () {
+      const res = await fetch(`${BASE_URL}/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ otp })
+      });
 
-          alert("🎉 Payment Successful");
+      if (!res.ok) throw new Error("Server error");
 
-          fetch(`${BASE_URL}/book`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify({ email })
-          })
-            .then(() => {
-              alert("Booking Confirmed + Email Sent ✅");
+      const data = await res.json();
+
+      if (data.success) {
+        alert("OTP Verified ✅");
+        nextStep();
+      } else {
+        alert("Wrong OTP ❌");
+      }
+
+    } catch (err) {
+      console.log("Verify Error:", err);
+      alert("Verification failed ❌");
+    }
+  };
+
+  // =======================
+  // BOOKING FUNCTION
+  // =======================
+  window.bookNow = async function () {
+    try {
+      const email = document.getElementById("email").value;
+      const payment = document.getElementById("payment").value;
+      const amount = calculatePrice();
+
+      if (!validateEmail(email)) {
+        alert("Invalid email");
+        return;
+      }
+
+      if (!payment) {
+        alert("Select payment method");
+        return;
+      }
+
+      // CASH
+      if (payment === "cash") {
+
+        const res = await fetch(`${BASE_URL}/book`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({ email })
+        });
+
+        if (!res.ok) throw new Error("Booking failed");
+
+        alert("✅ Booking Confirmed");
+        location.reload();
+      }
+
+      // UPI
+      if (payment === "upi") {
+
+        const options = {
+          key: "rzp_live_SbhI7uVjasgo07",
+          amount: amount * 100,
+          currency: "INR",
+          name: "Travel Booking",
+          description: "Payment",
+
+          handler: async function () {
+            try {
+              const res = await fetch(`${BASE_URL}/book`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({ email })
+              });
+
+              if (!res.ok) throw new Error();
+
+              alert("🎉 Payment + Booking Success");
               location.reload();
-            })
-            .catch(err => {
-              console.log(err);
-              alert("Booking failed after payment ❌");
-            });
-        }
-      };
 
-      const rzp = new Razorpay(options);
-      rzp.open();
+            } catch {
+              alert("Booking failed after payment ❌");
+            }
+          }
+        };
+
+        new Razorpay(options).open();
+      }
+
+    } catch (err) {
+      console.log("Booking Error:", err);
+      alert("Something went wrong ❌");
     }
   };
 
