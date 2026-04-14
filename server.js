@@ -7,27 +7,14 @@ const cors = require("cors");
 const app = express();
 
 // ======================
-// CORS (FINAL FIX)
+// CORS (FINAL WORKING)
 // ======================
 const allowedOrigins = [
-  "https://rdrtravels.in",
-  "https://tour-travel1.onrender.com"
+  "https://tour-travel1.onrender.com",
+  "https://rdrtravels.in"
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("CORS not allowed"), false);
-    }
-  },
-  credentials: true
-}));
-
-app.options("*", cors({
   origin: allowedOrigins,
   credentials: true
 }));
@@ -39,14 +26,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION (IMPORTANT)
+// SESSION (IMPORTANT FIX)
 // ======================
 app.use(session({
   secret: "otp_secret_key",
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false,
+    secure: true,          // 🔥 IMPORTANT (Render = HTTPS)
+    sameSite: "none",      // 🔥 REQUIRED for cross-origin
     httpOnly: true
   }
 }));

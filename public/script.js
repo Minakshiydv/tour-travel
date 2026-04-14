@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // =======================
-  // BASE URL
+  // BASE URL (FINAL)
   // =======================
   const BASE_URL = "https://tour-travel1.onrender.com";
 
@@ -14,30 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (menuToggle && navMenu) {
     menuToggle.addEventListener("click", () => {
       navMenu.classList.toggle("active");
-    });
-  }
-
-  // =======================
-  // SWIPER
-  // =======================
-  if (typeof Swiper !== "undefined") {
-
-    new Swiper(".heroSwiper", {
-      loop: true,
-      autoplay: { delay: 4000 },
-      pagination: { el: ".swiper-pagination", clickable: true },
-    });
-
-    new Swiper(".aboutSwiper", {
-      loop: true,
-      autoplay: { delay: 4000 },
-      pagination: { el: ".swiper-pagination", clickable: true },
-    });
-
-    new Swiper(".reviewSwiper", {
-      loop: true,
-      autoplay: { delay: 3000 },
-      pagination: { el: ".reviewSwiper .swiper-pagination", clickable: true },
     });
   }
 
@@ -78,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // =======================
-  // PRICE CALCULATION (FIXED)
+  // PRICE CALCULATION
   // =======================
   function calculatePrice() {
     const vehicleEl = document.getElementById("vehicle");
@@ -92,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = vehicle * days;
 
     const priceBox = document.getElementById("finalPrice");
-
     if (priceBox) {
       priceBox.innerText = "Final: ₹" + total;
     }
@@ -106,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (vehicleInput && daysInput) {
     vehicleInput.addEventListener("change", calculatePrice);
     daysInput.addEventListener("input", calculatePrice);
-    calculatePrice(); // safe call
+    calculatePrice();
   }
 
   // =======================
@@ -121,10 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.sendOTP = async function () {
     try {
-      const emailEl = document.getElementById("email");
-      if (!emailEl) return;
-
-      const email = emailEl.value;
+      const email = document.getElementById("email").value;
 
       if (!validateEmail(email)) {
         alert("Enter valid email");
@@ -142,14 +114,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || "OTP failed");
-      }
+      if (!res.ok) throw new Error();
 
       alert(data.message);
 
     } catch (err) {
-      console.log("OTP Error:", err);
+      console.log(err);
       alert("OTP failed ❌");
     }
   };
@@ -159,10 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   window.verifyOTP = async function () {
     try {
-      const otpEl = document.getElementById("otp");
-      if (!otpEl) return;
-
-      const otp = otpEl.value;
+      const otp = document.getElementById("otp").value;
 
       if (!otp) {
         alert("Enter OTP");
@@ -188,23 +155,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
     } catch (err) {
-      console.log("Verify Error:", err);
+      console.log(err);
       alert("Verification failed ❌");
     }
   };
 
   // =======================
-  // BOOKING FUNCTION
+  // BOOKING
   // =======================
   window.bookNow = async function () {
     try {
-      const emailEl = document.getElementById("email");
-      const paymentEl = document.getElementById("payment");
-
-      if (!emailEl || !paymentEl) return;
-
-      const email = emailEl.value;
-      const payment = paymentEl.value;
+      const email = document.getElementById("email").value;
+      const payment = document.getElementById("payment").value;
       const amount = calculatePrice();
 
       if (!validateEmail(email)) {
@@ -217,9 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // =======================
-      // CASH
-      // =======================
+      // ===== CASH =====
       if (payment === "cash") {
 
         const res = await fetch(`${BASE_URL}/book`, {
@@ -237,9 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
         location.reload();
       }
 
-      // =======================
-      // UPI
-      // =======================
+      // ===== UPI =====
       if (payment === "upi") {
 
         const options = {
@@ -266,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
               location.reload();
 
             } catch {
-              alert("Booking failed after payment ❌");
+              alert("Booking failed ❌");
             }
           }
         };
@@ -275,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
     } catch (err) {
-      console.log("Booking Error:", err);
+      console.log(err);
       alert("Something went wrong ❌");
     }
   };
