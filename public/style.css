@@ -663,5 +663,19 @@ footer {
 @keyframes pulseCall {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  100% { transform: scale(1); } } 
+header {
+  background: #008080;
+  padding: 8px 0; /* Padding kam ki hai taki patla aur sundar lage */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+}
+
+header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1300px; /* Space thodi badha di hai */
 }
