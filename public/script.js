@@ -145,31 +145,45 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   // BOOKING & RAZORPAY (Same as yours)
   // =======================
-   window.bookNow = async function () {
+  window.bookNow = async function () {
   try {
     const emailEl = document.getElementById("email");
     const paymentEl = document.getElementById("payment");
 
-    if (!emailEl || !paymentEl) return;
+    if (!emailEl || !paymentEl) {
+      alert("Form missing ❌");
+      return;
+    }
 
-    // ✅ collect all data
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const phone = document.getElementById("phone").value;
-    const location = document.getElementById("location").value;
-    const vehicle = document.getElementById("vehicle").value;
+    // =======================
+    // COLLECT DATA
+    // =======================
+    const firstName = document.getElementById("firstName")?.value || "";
+    const lastName = document.getElementById("lastName")?.value || "";
+    const phone = document.getElementById("phone")?.value || "";
+    const location = document.getElementById("destination")?.value || "";
+    const vehicle = document.getElementById("vehicle")?.value || "";
+    const days = document.getElementById("days")?.value || "";
 
     const email = emailEl.value.trim();
     const payment = paymentEl.value;
     const amount = calculatePrice();
 
-    // ✅ common object
+    if (!firstName || !lastName || !email || !phone) {
+      alert("Please fill all required fields ❌");
+      return;
+    }
+
+    // =======================
+    // COMMON DATA
+    // =======================
     const bookingData = {
       firstName,
       lastName,
       phone,
       location,
       vehicle,
+      days,
       email,
       paymentMode: payment
     };
@@ -192,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =======================
-    // UPI PAYMENT (RAZORPAY)
+    // UPI PAYMENT
     // =======================
     if (payment === "upi") {
       const options = {
@@ -228,18 +242,46 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 };
 
-showStep(currentStep);
+document.addEventListener("DOMContentLoaded", function () {
 
   // =======================
-  // SWIPERS (Wahi Purane)
+  // HERO SWIPER
   // =======================
-  if (typeof Swiper !== 'undefined') {
-      new Swiper(".heroSwiper", { loop: true, autoplay: { delay: 3000 } });
-      new Swiper(".aboutSwiper", { loop: true, autoplay: { delay: 3500 } });
-      const reviewEl = document.querySelector(".reviewSwiper");
-      if (reviewEl) {
-          const rs = new Swiper(".reviewSwiper", { loop: true, spaceBetween: 20, autoplay: { delay: 2000 } });
-          rs.autoplay.start();
+  if (typeof Swiper !== "undefined") {
+    new Swiper(".heroSwiper", {
+      loop: true,
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false
       }
+    });
+
+    // =======================
+    // ABOUT SWIPER
+    // =======================
+    new Swiper(".aboutSwiper", {
+      loop: true,
+      autoplay: {
+        delay: 3500,
+        disableOnInteraction: false
+      }
+    });
+
+    // =======================
+    // REVIEW SWIPER
+    // =======================
+    const reviewEl = document.querySelector(".reviewSwiper");
+
+    if (reviewEl) {
+      new Swiper(".reviewSwiper", {
+        loop: true,
+        spaceBetween: 20,
+        autoplay: {
+          delay: 2000,
+          disableOnInteraction: false
+        }
+      });
+    }
   }
+});
 });
