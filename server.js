@@ -3,8 +3,9 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const session = require("express-session");
 const cors = require("cors");
-app.use(express.json());
+
 const app = express();
+app.use(express.json());
 
 // ======================
 // CORS CONFIG
