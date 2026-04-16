@@ -145,74 +145,111 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   // BOOKING & RAZORPAY (Same as yours)
   // =======================
-  const Booking = require("./models/booking");
-
-app.post("/book", async (req, res) => {
+  window.bookNow = async function () {
   try {
-    console.log("BOOK API HIT");
-    console.log(req.body);
+    const emailEl = document.getElementById("email");
+    const paymentEl = document.getElementById("payment");
 
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      location,
-      vehicle,
-      days,
-      paymentMode,
-      paymentId
-    } = req.body;
-
-    // =========================
-    // BASIC VALIDATION
-    // =========================
-    if (!firstName || !lastName || !email || !phone) {
-      return res.status(400).json({ message: "Missing required fields ❌" });
+    if (!emailEl || !paymentEl) {
+      alert("Form missing ❌");
+      return;
     }
 
-    // =========================
-    // SAVE IN MONGODB
-    // =========================
-    const booking = new Booking({
+    const firstName = document.getElementById("firstName")?.value || "";
+    const lastName = document.getElementById("lastName")?.value || "";
+    const phone = document.getElementById("phone")?.value || "";
+    const location = document.getElementById("destination")?.value || "";
+    const vehicle = document.getElementById("vehicle")?.value || "";
+    const days = document.getElementById("days")?.value || "";
+
+    const email = emailEl.value.trim();
+    const payment = paymentEl.value;
+
+    if (!firstName || !lastName || !email || !phone) {
+      alert("Please fill all required fields ❌");
+      return;
+    }
+
+    const bookingData = {
       firstName,
       lastName,
-      email,
       phone,
       location,
       vehicle,
       days,
-      paymentMode,
-      paymentId: paymentId || "CASH"
-    });
+      email,
+      paymentMode: payment
+    };
 
-    await booking.save();
+    // ================= CASH =================
+    if (payment === "cash") {
+      const res = await fetch("/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingData)
+      });
 
-    // =========================
-    // SEND EMAIL
-    // =========================
-    await transporter.sendMail({
-      from: `"Travel Booking" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Booking Confirmed 🎉",
-      text: `Hi ${firstName}, your booking is confirmed for ${location}.`
-    });
+      const data = await res.json();
 
-    res.status(200).json({
-      message: "Booking successful & email sent ✅"
-    });
+      if (res.ok) {
+        alert("✅ Booking Confirmed");
+        location.reload();
+      } else {
+        alert(data.message || "Booking failed ❌");
+      }
+    }
 
-  } catch (error) {
-    console.error("BOOK ERROR:", error);
-    res.status(500).json({
-      message: "Booking failed ❌",
-      error: error.message
-    });
+    // ================= UPI =================
+    if (payment === "upi") {
+      const amount = calculatePrice();
+
+      const options = {
+        key: "rzp_live_SbhI7uVjasgo07",
+        amount: amount * 100,
+        currency: "INR",
+        name: "Travel Booking",
+
+        handler: async function (response) {
+          const res = await fetch("/book", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...bookingData,
+              paymentId: response.razorpay_payment_id
+            })
+          });
+
+          if (res.ok) {
+            alert("🎉 Payment Success");
+            location.reload();
+          }
+        }
+      };
+
+      new Razorpay(options).open();
+    }
+
+  } catch (err) {
+    console.log(err);
+    alert("Something went wrong ❌");
   }
-});
-    // =======================
-    // ABOUT SWIPER
-    // =======================
+};
+
+
+
+// ================= SWIPER =================
+document.addEventListener("DOMContentLoaded", function () {
+
+  if (typeof Swiper !== "undefined") {
+
+    new Swiper(".heroSwiper", {
+      loop: true,
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false
+      }
+    });
+
     new Swiper(".aboutSwiper", {
       loop: true,
       autoplay: {
@@ -221,9 +258,6 @@ app.post("/book", async (req, res) => {
       }
     });
 
-    // =======================
-    // REVIEW SWIPER
-    // =======================
     const reviewEl = document.querySelector(".reviewSwiper");
 
     if (reviewEl) {
@@ -236,4 +270,6 @@ app.post("/book", async (req, res) => {
         }
       });
     }
+  }
+});
 });
