@@ -56,20 +56,24 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
-// NODEMAILER (IPv4 FIX FOR ENETUNREACH)
+// NODEMAILER (The Final IPv4 Fix)
 // ======================
 const transporter = nodemailer.createTransport({
-  host: "74.125.130.108", // Direct Google SMTP IPv4 address
+  host: "smtp.gmail.com",
   port: 587,
-  secure: false,
+  secure: false, 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false,
-    minVersion: 'TLSv1.2'
-  }
+    rejectUnauthorized: false
+  },
+  // Ye lines error ko block karengi
+  family: 4, 
+  connectionTimeout: 10000,
+  greetingTimeout: 5000,
+  socketTimeout: 15000
 });
 
 // ======================
@@ -81,10 +85,12 @@ app.post("/send-otp", async (req, res) => {
     if (!email) return res.status(400).json({ message: "Email required ❌" });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
+    
+    // Session mein data save karna
     req.session.otp = otp;
     req.session.email = email;
 
-    // Manual session save
+    // Manual session save for Render
     req.session.save((err) => {
       if (err) console.error("Session Save Error:", err);
     });
@@ -114,6 +120,7 @@ app.post("/send-otp", async (req, res) => {
 // ======================
 app.post("/verify-otp", (req, res) => {
   const { otp } = req.body;
+  
   if (!req.session.otp) {
     return res.json({ success: false, message: "Session expired ❌" });
   }
@@ -147,7 +154,7 @@ app.post("/book", async (req, res) => {
 });
 
 // ======================
-// HOME ROUTES
+// HOME ROUTES (NO WILDCARDS)
 // ======================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
