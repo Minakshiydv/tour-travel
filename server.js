@@ -7,7 +7,7 @@ const cors = require("cors");
 const app = express();
 
 // ======================
-// CORS FIX
+// CORS CONFIG
 // ======================
 const allowedOrigins = [
   "https://tour-travel1.onrender.com",
@@ -17,14 +17,17 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
+
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
-    } else {
-      return callback(null, true);
     }
+
+    return callback(null, true); // allow all (safe fallback)
   },
   credentials: true
 }));
+
+app.options(/.*/, cors());
 
 // ======================
 // BODY PARSER
@@ -33,12 +36,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION FIX
+// SESSION CONFIG (Render FIX)
 // ======================
 app.set("trust proxy", 1);
 
 app.use(session({
-  secret: "otp_secret_key",
+  secret: "otp_secret_key_123",
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -61,22 +64,20 @@ app.get("/", (req, res) => {
 });
 
 // ======================
-// 🔥 SAFE TRANSPORTER (FIXED)
+// NODEMAILER TRANSPORTER
 // ======================
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
-    user: process.env.EMAIL_USER || "",
-    pass: process.env.EMAIL_PASS || ""
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
-// ❌ transporter.verify REMOVED (Render crash fix)
-
 // ======================
-// SEND OTP
+// SEND OTP API
 // ======================
 app.post("/send-otp", async (req, res) => {
   try {
@@ -91,7 +92,7 @@ app.post("/send-otp", async (req, res) => {
     req.session.otp = otp;
     req.session.email = email;
 
-    console.log("OTP:", otp);
+    console.log("OTP GENERATED:", otp);
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -103,7 +104,7 @@ app.post("/send-otp", async (req, res) => {
     res.json({ message: "OTP sent successfully ✅" });
 
   } catch (error) {
-    console.log("❌ OTP ERROR:", error);
+    console.log("❌ OTP ERROR:", error.message);
 
     res.status(500).json({
       message: "OTP not sent ❌",
@@ -113,12 +114,16 @@ app.post("/send-otp", async (req, res) => {
 });
 
 // ======================
-// VERIFY OTP
+// VERIFY OTP API
 // ======================
 app.post("/verify-otp", (req, res) => {
   const { otp } = req.body;
 
-  if (otp == req.session.otp) {
+  if (!req.session.otp) {
+    return res.json({ success: false, message: "Session expired ❌" });
+  }
+
+  if (parseInt(otp) === req.session.otp) {
     return res.json({ success: true, message: "Verified ✅" });
   } else {
     return res.json({ success: false, message: "Invalid OTP ❌" });
@@ -126,7 +131,7 @@ app.post("/verify-otp", (req, res) => {
 });
 
 // ======================
-// BOOKING EMAIL
+// BOOKING API
 // ======================
 app.post("/book", async (req, res) => {
   try {
@@ -146,7 +151,7 @@ app.post("/book", async (req, res) => {
     res.json({ message: "Booking email sent ✅" });
 
   } catch (error) {
-    console.log("❌ BOOKING ERROR:", error);
+    console.log("❌ BOOKING ERROR:", error.message);
 
     res.status(500).json({
       message: "Booking failed ❌",
@@ -156,7 +161,14 @@ app.post("/book", async (req, res) => {
 });
 
 // ======================
-// SERVER START
+// ERROR HANDLING
+// ======================
+app.use((req, res) => {
+  res.status(404).send("Route not found ❌");
+});
+
+// ======================
+// START SERVER
 // ======================
 const PORT = process.env.PORT || 3000;
 
