@@ -34,19 +34,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION CONFIG (Render FIX)
+// SESSION CONFIG (Render Fix)
 // ======================
 app.set("trust proxy", 1);
 
 app.use(session({
   secret: "otp_secret_key_123",
-  resave: true, // Ise true rakhein taaki session refresh hota rahe
+  resave: true,
   saveUninitialized: true,
   cookie: {
     secure: true,
     sameSite: "none",
     httpOnly: true,
-    maxAge: 1000 * 60 * 15 // 15 minutes validity
+    maxAge: 1000 * 60 * 15 // 15 mins
   }
 }));
 
@@ -56,19 +56,19 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
-// NODEMAILER (Fixed for ENETUNREACH)
+// NODEMAILER (IPv4 FIX FOR ENETUNREACH)
 // ======================
-// Yahan maine Port 587 aur TLS settings daali hain jo Render par block nahi hoti
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "74.125.130.108", // Direct Google SMTP IPv4 address
   port: 587,
-  secure: false, // 587 ke liye hamesha false rehta hai
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false // Connection errors se bachne ke liye
+    rejectUnauthorized: false,
+    minVersion: 'TLSv1.2'
   }
 });
 
@@ -81,10 +81,13 @@ app.post("/send-otp", async (req, res) => {
     if (!email) return res.status(400).json({ message: "Email required ❌" });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    
-    // Session mein OTP save karna
     req.session.otp = otp;
     req.session.email = email;
+
+    // Manual session save
+    req.session.save((err) => {
+      if (err) console.error("Session Save Error:", err);
+    });
 
     console.log("OTP GENERATED:", otp);
 
@@ -99,7 +102,10 @@ app.post("/send-otp", async (req, res) => {
 
   } catch (error) {
     console.error("❌ OTP ERROR:", error.message);
-    res.status(500).json({ message: "OTP not sent ❌", error: error.message });
+    res.status(500).json({ 
+      message: "OTP not sent ❌", 
+      error: error.message 
+    });
   }
 });
 
@@ -108,9 +114,6 @@ app.post("/send-otp", async (req, res) => {
 // ======================
 app.post("/verify-otp", (req, res) => {
   const { otp } = req.body;
-  
-  console.log("Session OTP:", req.session.otp);
-
   if (!req.session.otp) {
     return res.json({ success: false, message: "Session expired ❌" });
   }
@@ -144,7 +147,7 @@ app.post("/book", async (req, res) => {
 });
 
 // ======================
-// HOME ROUTES (NO * USED HERE)
+// HOME ROUTES
 // ======================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
