@@ -17,12 +17,10 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
-    return callback(null, true); // allow all (safe fallback)
+    return callback(null, true); 
   },
   credentials: true
 }));
@@ -53,7 +51,7 @@ app.use(session({
 
 // ======================
 // STATIC FILES
-// ======================
+// = :  =====================
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
@@ -64,12 +62,10 @@ app.get("/", (req, res) => {
 });
 
 // ======================
-// NODEMAILER TRANSPORTER
+// NODEMAILER TRANSPORTER (UPDATED FOR RENDER)
 // ======================
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -94,8 +90,11 @@ app.post("/send-otp", async (req, res) => {
 
     console.log("OTP GENERATED:", otp);
 
+    // Verify connection before sending
+    await transporter.verify();
+
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"Luxury Booking" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your OTP Code",
       text: `Your OTP is: ${otp}`
@@ -104,11 +103,10 @@ app.post("/send-otp", async (req, res) => {
     res.json({ message: "OTP sent successfully ✅" });
 
   } catch (error) {
-    console.log("❌ OTP ERROR:", error.message);
-
+    console.error("❌ OTP ERROR:", error);
     res.status(500).json({
       message: "OTP not sent ❌",
-      error: error.message
+      error: error.message // Isse browser mein error dikhega
     });
   }
 });
@@ -142,7 +140,7 @@ app.post("/book", async (req, res) => {
     }
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"Luxury Booking" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Booking Confirmed 🎉",
       text: "Your booking has been successfully confirmed!"
@@ -152,7 +150,6 @@ app.post("/book", async (req, res) => {
 
   } catch (error) {
     console.log("❌ BOOKING ERROR:", error.message);
-
     res.status(500).json({
       message: "Booking failed ❌",
       error: error.message
