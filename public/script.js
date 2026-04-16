@@ -145,117 +145,71 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   // BOOKING & RAZORPAY (Same as yours)
   // =======================
-  window.bookNow = async function () {
+  const Booking = require("./models/booking");
+
+app.post("/book", async (req, res) => {
   try {
-    const emailEl = document.getElementById("email");
-    const paymentEl = document.getElementById("payment");
+    console.log("BOOK API HIT");
+    console.log(req.body);
 
-    if (!emailEl || !paymentEl) {
-      alert("Form missing ❌");
-      return;
-    }
-
-    // =======================
-    // COLLECT DATA
-    // =======================
-    const firstName = document.getElementById("firstName")?.value || "";
-    const lastName = document.getElementById("lastName")?.value || "";
-    const phone = document.getElementById("phone")?.value || "";
-    const location = document.getElementById("destination")?.value || "";
-    const vehicle = document.getElementById("vehicle")?.value || "";
-    const days = document.getElementById("days")?.value || "";
-
-    const email = emailEl.value.trim();
-    const payment = paymentEl.value;
-    const amount = calculatePrice();
-
-    if (!firstName || !lastName || !email || !phone) {
-      alert("Please fill all required fields ❌");
-      return;
-    }
-
-    // =======================
-    // COMMON DATA
-    // =======================
-    const bookingData = {
+    const {
       firstName,
       lastName,
+      email,
       phone,
       location,
       vehicle,
       days,
+      paymentMode,
+      paymentId
+    } = req.body;
+
+    // =========================
+    // BASIC VALIDATION
+    // =========================
+    if (!firstName || !lastName || !email || !phone) {
+      return res.status(400).json({ message: "Missing required fields ❌" });
+    }
+
+    // =========================
+    // SAVE IN MONGODB
+    // =========================
+    const booking = new Booking({
+      firstName,
+      lastName,
       email,
-      paymentMode: payment
-    };
-
-    // =======================
-    // CASH PAYMENT
-    // =======================
-    if (payment === "cash") {
-      const res = await fetch(`${BASE_URL}/book`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(bookingData)
-      });
-
-      if (res.ok) {
-        alert("✅ Booking Confirmed");
-        location.reload();
-      }
-    }
-
-    // =======================
-    // UPI PAYMENT
-    // =======================
-    if (payment === "upi") {
-      const options = {
-        key: "rzp_live_SbhI7uVjasgo07",
-        amount: amount * 100,
-        currency: "INR",
-        name: "Travel Booking",
-
-        handler: async function (response) {
-          const res = await fetch(`${BASE_URL}/book`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              ...bookingData,
-              paymentId: response.razorpay_payment_id
-            })
-          });
-
-          if (res.ok) {
-            alert("🎉 Payment Success");
-            location.reload();
-          }
-        }
-      };
-
-      new Razorpay(options).open();
-    }
-
-  } catch (err) {
-    console.log(err);
-    alert("Something went wrong ❌");
-  }
-};
-
-document.addEventListener("DOMContentLoaded", function () {
-
-  // =======================
-  // HERO SWIPER
-  // =======================
-  if (typeof Swiper !== "undefined") {
-    new Swiper(".heroSwiper", {
-      loop: true,
-      autoplay: {
-        delay: 3000,
-        disableOnInteraction: false
-      }
+      phone,
+      location,
+      vehicle,
+      days,
+      paymentMode,
+      paymentId: paymentId || "CASH"
     });
 
+    await booking.save();
+
+    // =========================
+    // SEND EMAIL
+    // =========================
+    await transporter.sendMail({
+      from: `"Travel Booking" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Booking Confirmed 🎉",
+      text: `Hi ${firstName}, your booking is confirmed for ${location}.`
+    });
+
+    res.status(200).json({
+      message: "Booking successful & email sent ✅"
+    });
+
+  } catch (error) {
+    console.error("BOOK ERROR:", error);
+    res.status(500).json({
+      message: "Booking failed ❌",
+      error: error.message
+    });
+  }
+});
     // =======================
     // ABOUT SWIPER
     // =======================
@@ -282,6 +236,4 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
     }
-  }
-});
 });
