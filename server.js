@@ -135,7 +135,7 @@ app.post("/verify-otp", (req, res) => {
 // ======================
 // BOOKING API
 // ======================
-const Booking = require("./model/Booking");
+require("./models/booking")
 
 app.post("/book", async (req, res) => {
   try {
