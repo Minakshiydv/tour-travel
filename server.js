@@ -17,10 +17,11 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
     }
-    return callback(null, true); 
   },
   credentials: true
 }));
@@ -34,35 +35,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION CONFIG (Render Fix Applied)
+// SESSION CONFIG (Render Fix)
 // ======================
-app.set("trust proxy", 1); // Render ke liye ye 100% zaroori hai
+app.set("trust proxy", 1);
 
 app.use(session({
   secret: "otp_secret_key_123",
-  resave: true,                // Ise TRUE rakhein taki session delete na ho
+  resave: true,
   saveUninitialized: true,
   cookie: {
-    secure: true,              // Render HTTPS use karta hai isliye true
-    sameSite: "none",          // Cross-site cookies ke liye zaroori
-    maxAge: 1000 * 60 * 15     // 15 Minutes tak OTP valid rahega
+    secure: true,
+    sameSite: "none",
+    httpOnly: true,
+    maxAge: 1000 * 60 * 15 // 15 mins
   }
 }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
-// NODEMAILER (Timeout & Pool Fix)
+// NODEMAILER (Gmail Service)
 // ======================
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  pool: true, // Connection ko zinda rakhta hai
+  pool: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
-  connectionTimeout: 10000, // 10 seconds timeout
-  socketTimeout: 15000      // 15 seconds socket timeout
+  connectionTimeout: 10000,
+  socketTimeout: 15000
 });
 
 // ======================
@@ -74,17 +76,12 @@ app.post("/send-otp", async (req, res) => {
     if (!email) return res.status(400).json({ message: "Email required ❌" });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-
-    // Session mein data save karna
     req.session.otp = otp;
     req.session.email = email;
-    
-    // Sabse important step: Session ko manually save karna
+
+    // Session save manually
     req.session.save((err) => {
-      if (err) {
-        console.error("Session Save Error:", err);
-        return res.status(500).json({ message: "Session Error ❌" });
-      }
+      if (err) console.error("Session Error:", err);
     });
 
     console.log("OTP GENERATED:", otp);
@@ -100,10 +97,7 @@ app.post("/send-otp", async (req, res) => {
 
   } catch (error) {
     console.error("❌ OTP ERROR:", error.message);
-    res.status(500).json({
-      message: "OTP not sent ❌",
-      error: error.message 
-    });
+    res.status(500).json({ message: "OTP not sent ❌", error: error.message });
   }
 });
 
@@ -112,11 +106,8 @@ app.post("/send-otp", async (req, res) => {
 // ======================
 app.post("/verify-otp", (req, res) => {
   const { otp } = req.body;
-
-  console.log("Stored Session OTP:", req.session.otp); // Debugging ke liye
-
   if (!req.session.otp) {
-    return res.status(400).json({ success: false, message: "Session expired or OTP not found ❌" });
+    return res.status(400).json({ success: false, message: "Session expired ❌" });
   }
 
   if (parseInt(otp) === req.session.otp) {
@@ -126,7 +117,9 @@ app.post("/verify-otp", (req, res) => {
   }
 });
 
-// ... Baki Booking API aur Listen wahi rahega ...
+// ======================
+// BOOKING API
+// ======================
 app.post("/book", async (req, res) => {
   try {
     const email = req.body.email || req.session.email;
@@ -138,15 +131,23 @@ app.post("/book", async (req, res) => {
       subject: "Booking Confirmed 🎉",
       text: "Your booking has been successfully confirmed!"
     });
+
     res.json({ message: "Booking email sent ✅" });
   } catch (error) {
     res.status(500).json({ message: "Booking failed ❌", error: error.message });
   }
 });
 
-app.get("*", (req, res) => {
+// ======================
+// ROUTE FIX (CRITICAL)
+// ======================
+// Naye Express versions ke liye bracket zaroori hai
+app.get("(.*)", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// ======================
+// START SERVER
+// ======================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
