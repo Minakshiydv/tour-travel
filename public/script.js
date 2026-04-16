@@ -193,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // ===== CASH =====
       if (payment === "cash") {
 
         const res = await fetch(`${BASE_URL}/book`, {
@@ -211,7 +210,6 @@ document.addEventListener("DOMContentLoaded", () => {
         location.reload();
       }
 
-      // ===== UPI =====
       if (payment === "upi") {
 
         const options = {
@@ -255,4 +253,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showStep(currentStep);
 
+  // =======================
+  // 🔥 SWIPER FIX (IMPORTANT)
+  // =======================
+  new Swiper(".heroSwiper", {
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: ".heroSwiper .swiper-pagination",
+      clickable: true,
+    },
+  });
+
+  new Swiper(".aboutSwiper", {
+    loop: true,
+    autoplay: {
+      delay: 3500,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: ".aboutSwiper .swiper-pagination",
+      clickable: true,
+    },
+  });
+
 });
+// REVIEW SWIPER FINAL FIX
+const reviewEl = document.querySelector(".reviewSwiper");
+
+if (reviewEl) {
+  const reviewSwiper = new Swiper(".reviewSwiper", {
+    loop: true,
+    spaceBetween: 20,
+    speed: 800,
+
+    autoplay: {
+      delay: 2000,
+      disableOnInteraction: false,
+      pauseOnMouseEnter: false
+    },
+
+    pagination: {
+      el: ".reviewSwiper .swiper-pagination",
+      clickable: true,
+    }
+  });
+
+  // 🔥 FORCE START (important)
+  reviewSwiper.autoplay.start();
+}

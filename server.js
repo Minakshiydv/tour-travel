@@ -7,7 +7,7 @@ const cors = require("cors");
 const app = express();
 
 // ======================
-// CORS (FINAL WORKING)
+// CORS FIX
 // ======================
 const allowedOrigins = [
   "https://tour-travel1.onrender.com",
@@ -15,9 +15,18 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(null, true);
+    }
+  },
   credentials: true
 }));
+
+app.options("*", cors());
 
 // ======================
 // BODY PARSER
@@ -26,15 +35,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION (IMPORTANT FIX)
+// SESSION FIX
 // ======================
+app.set("trust proxy", 1);
+
 app.use(session({
   secret: "otp_secret_key",
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: true,          // 🔥 IMPORTANT (Render = HTTPS)
-    sameSite: "none",      // 🔥 REQUIRED for cross-origin
+    secure: true,
+    sameSite: "none",
     httpOnly: true
   }
 }));
@@ -52,13 +63,26 @@ app.get("/", (req, res) => {
 });
 
 // ======================
-// EMAIL CONFIG
+// 🔥 FIXED TRANSPORTER (IMPORTANT)
 // ======================
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: "rdrtourandtravels@gmail.com",
-    pass: "dtpn gjfw nctz qzj"
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// ======================
+// DEBUG VERIFY (IMPORTANT)
+// ======================
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("❌ MAIL ERROR:", error);
+  } else {
+    console.log("✅ MAIL SERVER READY");
   }
 });
 
@@ -78,10 +102,11 @@ app.post("/send-otp", async (req, res) => {
     req.session.otp = otp;
     req.session.email = email;
 
-    console.log("OTP:", otp, "Email:", email);
+    console.log("OTP:", otp);
+    console.log("EMAIL ENV:", process.env.EMAIL_USER);
 
     await transporter.sendMail({
-      from: "rdrtourandtravels@gmail.com",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Your OTP Code",
       text: `Your OTP is: ${otp}`
@@ -90,8 +115,12 @@ app.post("/send-otp", async (req, res) => {
     res.json({ message: "OTP sent successfully ✅" });
 
   } catch (error) {
-    console.log("OTP Error:", error);
-    res.status(500).json({ message: "OTP not sent ❌" });
+    console.log("❌ OTP ERROR:", error);
+
+    res.status(500).json({
+      message: "OTP not sent ❌",
+      error: error.message
+    });
   }
 });
 
@@ -120,7 +149,7 @@ app.post("/book", async (req, res) => {
     }
 
     await transporter.sendMail({
-      from: "rdrtourandtravels@gmail.com",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Booking Confirmed 🎉",
       text: "Your booking has been successfully confirmed!"
@@ -129,8 +158,12 @@ app.post("/book", async (req, res) => {
     res.json({ message: "Booking email sent ✅" });
 
   } catch (error) {
-    console.log("Booking Error:", error);
-    res.status(500).json({ message: "Booking failed ❌" });
+    console.log("❌ BOOKING ERROR:", error);
+
+    res.status(500).json({
+      message: "Booking failed ❌",
+      error: error.message
+    });
   }
 });
 

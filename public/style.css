@@ -547,3 +547,121 @@ footer {
   color:gray;
   margin-bottom:40px;
 }
+ #why-us {
+  padding: 80px 20px;
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+  text-align: center;
+}
+
+#why-us h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.section-caption {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+}
+
+.why-box {
+  background: white;
+  padding: 30px 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.why-box:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.icon {
+  font-size: 35px;
+  margin-bottom: 15px;
+}
+
+.why-box h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.why-box p {
+  font-size: 14px;
+  color: #555;
+}
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #25D366;
+  color: white;
+  font-size: 24px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  z-index: 999;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+.whatsapp-float:hover {
+  transform: scale(1.1);
+}
+
+/* Pulse animation */
+.whatsapp-float {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.call-float {
+  position: fixed;
+  bottom: 90px; /* WhatsApp ke upar dikhega */
+  right: 20px;
+  background: #007bff;
+  color: white;
+  font-size: 22px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  z-index: 999;
+  transition: 0.3s;
+}
+
+/* Hover */
+.call-float:hover {
+  transform: scale(1.1);
+}
+
+/* Pulse animation */
+.call-float {
+  animation: pulseCall 1.5s infinite;
+}
+
+@keyframes pulseCall {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
