@@ -17,11 +17,10 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    return callback(null, true); 
   },
   credentials: true
 }));
@@ -35,22 +34,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// SESSION CONFIG (Render Fix)
+// SESSION CONFIG (Render FIX)
 // ======================
 app.set("trust proxy", 1);
 
 app.use(session({
   secret: "otp_secret_key_123",
-  resave: true,
+  resave: false,
   saveUninitialized: true,
   cookie: {
     secure: true,
     sameSite: "none",
-    httpOnly: true,
-    maxAge: 1000 * 60 * 15 // 15 mins
+    httpOnly: true
   }
 }));
 
+// ======================
+// STATIC FILES
+// ======================
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
@@ -58,13 +59,10 @@ app.use(express.static(path.join(__dirname, "public")));
 // ======================
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  pool: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 10000,
-  socketTimeout: 15000
+  }
 });
 
 // ======================
@@ -78,11 +76,6 @@ app.post("/send-otp", async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000);
     req.session.otp = otp;
     req.session.email = email;
-
-    // Session save manually
-    req.session.save((err) => {
-      if (err) console.error("Session Error:", err);
-    });
 
     console.log("OTP GENERATED:", otp);
 
@@ -107,7 +100,7 @@ app.post("/send-otp", async (req, res) => {
 app.post("/verify-otp", (req, res) => {
   const { otp } = req.body;
   if (!req.session.otp) {
-    return res.status(400).json({ success: false, message: "Session expired ❌" });
+    return res.json({ success: false, message: "Session expired ❌" });
   }
 
   if (parseInt(otp) === req.session.otp) {
@@ -139,10 +132,14 @@ app.post("/book", async (req, res) => {
 });
 
 // ======================
-// ROUTE FIX (CRITICAL)
+// HOME ROUTE & FALLBACK (Fix)
 // ======================
-// Naye Express versions ke liye bracket zaroori hai
-app.get("(.*)", (req, res) => {
+// Isse 404 aur PathError dono theek ho jayenge
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/index.html", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
