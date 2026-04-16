@@ -63,28 +63,19 @@ app.get("/", (req, res) => {
 });
 
 // ======================
-// 🔥 FIXED TRANSPORTER (IMPORTANT)
+// 🔥 SAFE TRANSPORTER (FIXED)
 // ======================
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.EMAIL_USER || "",
+    pass: process.env.EMAIL_PASS || ""
   }
 });
 
-// ======================
-// DEBUG VERIFY (IMPORTANT)
-// ======================
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("❌ MAIL ERROR:", error);
-  } else {
-    console.log("✅ MAIL SERVER READY");
-  }
-});
+// ❌ transporter.verify REMOVED (Render crash fix)
 
 // ======================
 // SEND OTP
@@ -103,7 +94,6 @@ app.post("/send-otp", async (req, res) => {
     req.session.email = email;
 
     console.log("OTP:", otp);
-    console.log("EMAIL ENV:", process.env.EMAIL_USER);
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
