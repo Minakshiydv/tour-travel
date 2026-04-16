@@ -135,24 +135,42 @@ app.post("/verify-otp", (req, res) => {
 // ======================
 // BOOKING API
 // ======================
+const Booking = require("./model/Booking");
+
 app.post("/book", async (req, res) => {
   try {
+    console.log(req.body);
+
     const email = req.body.email || req.session.email;
     if (!email) return res.status(400).json({ message: "Email missing ❌" });
 
+    // ✅ 1. SAVE DATA IN DATABASE
+    const booking = new Booking(req.body);
+    await booking.save();
+
+    // ✅ 2. SEND DETAILED EMAIL
     await transporter.sendMail({
       from: `"Luxury Booking" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Booking Confirmed 🎉",
-      text: "Your booking has been successfully confirmed!"
+      html: `
+        <h2>🎉 Booking Confirmed</h2>
+        <p><b>First Name:</b> ${req.body.firstName}</p>
+        <p><b>Last Name:</b> ${req.body.lastName}</p>
+        <p><b>Phone:</b> ${req.body.phone}</p>
+        <p><b>Location:</b> ${req.body.location}</p>
+        <p><b>Vehicle:</b> ${req.body.vehicle}</p>
+        <p><b>Payment Mode:</b> ${req.body.paymentMode}</p>
+        <p><b>Payment ID:</b> ${req.body.paymentId || "Cash Payment"}</p>
+      `
     });
 
-    res.json({ message: "Booking email sent ✅" });
+    res.json({ message: "Booking saved + email sent ✅" });
+
   } catch (error) {
     res.status(500).json({ message: "Booking failed ❌", error: error.message });
   }
 });
-
 // ======================
 // HOME ROUTES (NO WILDCARDS)
 // ======================

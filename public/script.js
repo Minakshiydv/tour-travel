@@ -145,50 +145,90 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================
   // BOOKING & RAZORPAY (Same as yours)
   // =======================
-  window.bookNow = async function () {
-    try {
-      const emailEl = document.getElementById("email");
-      const paymentEl = document.getElementById("payment");
-      if (!emailEl || !paymentEl) return;
+   window.bookNow = async function () {
+  try {
+    const emailEl = document.getElementById("email");
+    const paymentEl = document.getElementById("payment");
 
-      const email = emailEl.value.trim();
-      const payment = paymentEl.value;
-      const amount = calculatePrice();
+    if (!emailEl || !paymentEl) return;
 
-      if (payment === "cash") {
-        const res = await fetch(`${BASE_URL}/book`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email })
-        });
-        if (res.ok) { alert("✅ Booking Confirmed"); location.reload(); }
+    // ✅ collect all data
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const phone = document.getElementById("phone").value;
+    const location = document.getElementById("location").value;
+    const vehicle = document.getElementById("vehicle").value;
+
+    const email = emailEl.value.trim();
+    const payment = paymentEl.value;
+    const amount = calculatePrice();
+
+    // ✅ common object
+    const bookingData = {
+      firstName,
+      lastName,
+      phone,
+      location,
+      vehicle,
+      email,
+      paymentMode: payment
+    };
+
+    // =======================
+    // CASH PAYMENT
+    // =======================
+    if (payment === "cash") {
+      const res = await fetch(`${BASE_URL}/book`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(bookingData)
+      });
+
+      if (res.ok) {
+        alert("✅ Booking Confirmed");
+        location.reload();
       }
-
-      if (payment === "upi") {
-        const options = {
-          key: "rzp_live_SbhI7uVjasgo07",
-          amount: amount * 100,
-          currency: "INR",
-          name: "Travel Booking",
-          handler: async function (response) {
-            const res = await fetch(`${BASE_URL}/book`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ email, paymentId: response.razorpay_payment_id })
-            });
-            if (res.ok) { alert("🎉 Payment Success"); location.reload(); }
-          }
-        };
-        new Razorpay(options).open();
-      }
-    } catch (err) {
-      alert("Something went wrong ❌");
     }
-  };
 
-  showStep(currentStep);
+    // =======================
+    // UPI PAYMENT (RAZORPAY)
+    // =======================
+    if (payment === "upi") {
+      const options = {
+        key: "rzp_live_SbhI7uVjasgo07",
+        amount: amount * 100,
+        currency: "INR",
+        name: "Travel Booking",
+
+        handler: async function (response) {
+          const res = await fetch(`${BASE_URL}/book`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              ...bookingData,
+              paymentId: response.razorpay_payment_id
+            })
+          });
+
+          if (res.ok) {
+            alert("🎉 Payment Success");
+            location.reload();
+          }
+        }
+      };
+
+      new Razorpay(options).open();
+    }
+
+  } catch (err) {
+    console.log(err);
+    alert("Something went wrong ❌");
+  }
+};
+
+showStep(currentStep);
 
   // =======================
   // SWIPERS (Wahi Purane)

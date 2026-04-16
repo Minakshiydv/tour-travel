@@ -4,15 +4,15 @@ mongoose.connect("mongodb://127.0.0.1:27017/rdrBooking")
 .then(()=> console.log("MongoDB Connected"))
 .catch(err => console.log(err));
 
-const bookingSchema = new mongoose.Schema({
+  const bookingSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   email: String,
   phone: String,
-  tour: String,
-  days: Number,
+  location: String,
   vehicle: String,
-  payment: String
+  paymentMode: String,
+  paymentId: String
 });
 
 module.exports = mongoose.model("Booking", bookingSchema);
