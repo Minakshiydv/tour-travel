@@ -1,9 +1,5 @@
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGO_URI)
-.then(()=> console.log("MongoDB Connected"))
-.catch(err => console.log(err));
-
 const bookingSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -11,6 +7,7 @@ const bookingSchema = new mongoose.Schema({
   phone: String,
   location: String,
   vehicle: String,
+  days: Number,
   paymentMode: String,
   paymentId: String
 });

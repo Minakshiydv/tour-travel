@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -8,34 +10,21 @@ const cors = require("cors");
 const app = express();
 
 // ======================
-// MIDDLEWARE
+// BODY PARSER
 // ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ======================
-// CORS CONFIG
+// CORS
 // ======================
-const allowedOrigins = [
-  "https://tour-travel1.onrender.com",
-  "https://rdrtravels.in"
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
+  origin: true,
   credentials: true
 }));
 
-app.options(/.*/, cors());
-
 // ======================
-// SESSION CONFIG
+// SESSION
 // ======================
 app.set("trust proxy", 1);
 
@@ -44,10 +33,8 @@ app.use(session({
   resave: true,
   saveUninitialized: true,
   cookie: {
-    secure: true,
-    sameSite: "none",
-    httpOnly: true,
-    maxAge: 1000 * 60 * 15
+    secure: false, // local = false
+    httpOnly: true
   }
 }));
 
@@ -57,9 +44,9 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
-// MONGODB
+// MONGODB (SAFE)
 // ======================
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/rdrBooking")
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log("Mongo Error:", err));
 
@@ -82,53 +69,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // ======================
-// SEND OTP
-// ======================
-app.post("/send-otp", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email required ❌" });
-
-    const otp = Math.floor(100000 + Math.random() * 900000);
-
-    req.session.otp = otp;
-    req.session.email = email;
-
-    req.session.save(() => {});
-
-    await transporter.sendMail({
-      from: `"Luxury Booking" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP Code",
-      text: `Your OTP is: ${otp}`
-    });
-
-    res.json({ message: "OTP sent successfully ✅" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// ======================
-// VERIFY OTP
-// ======================
-app.post("/verify-otp", (req, res) => {
-  const { otp } = req.body;
-
-  if (!req.session.otp) {
-    return res.json({ success: false, message: "Session expired ❌" });
-  }
-
-  if (parseInt(otp) === req.session.otp) {
-    return res.json({ success: true, message: "Verified ✅" });
-  } else {
-    return res.json({ success: false, message: "Invalid OTP ❌" });
-  }
-});
-
-// ======================
-// BOOKING API
+// BOOK API
 // ======================
 app.post("/book", async (req, res) => {
   try {
@@ -147,10 +88,12 @@ app.post("/book", async (req, res) => {
       paymentId
     } = req.body;
 
+    // VALIDATION
     if (!firstName || !lastName || !email || !phone) {
       return res.status(400).json({ message: "Missing required fields ❌" });
     }
 
+    // SAVE IN DB
     const booking = new Booking({
       firstName,
       lastName,
@@ -165,21 +108,25 @@ app.post("/book", async (req, res) => {
 
     await booking.save();
 
-    await transporter.sendMail({
-      from: `"Luxury Booking" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Booking Confirmed 🎉",
-      html: `
-        <h2>🎉 Booking Confirmed</h2>
-        <p><b>First Name:</b> ${firstName}</p>
-        <p><b>Last Name:</b> ${lastName}</p>
-        <p><b>Phone:</b> ${phone}</p>
-        <p><b>Location:</b> ${location}</p>
-        <p><b>Vehicle:</b> ${vehicle}</p>
-        <p><b>Payment Mode:</b> ${paymentMode}</p>
-        <p><b>Payment ID:</b> ${paymentId || "Cash Payment"}</p>
-      `
-    });
+    // EMAIL SEND (SAFE)
+    try {
+      await transporter.sendMail({
+        from: `"Travel Booking" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Booking Confirmed 🎉",
+        html: `
+          <h2>🎉 Booking Confirmed</h2>
+          <p><b>Name:</b> ${firstName} ${lastName}</p>
+          <p><b>Phone:</b> ${phone}</p>
+          <p><b>Location:</b> ${location}</p>
+          <p><b>Vehicle:</b> ${vehicle}</p>
+          <p><b>Days:</b> ${days}</p>
+          <p><b>Payment Mode:</b> ${paymentMode}</p>
+        `
+      });
+    } catch (mailErr) {
+      console.log("EMAIL ERROR:", mailErr.message);
+    }
 
     res.json({ message: "Booking saved + email sent ✅" });
 
@@ -193,7 +140,7 @@ app.post("/book", async (req, res) => {
 });
 
 // ======================
-// ROUTES
+// HOME ROUTE
 // ======================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
