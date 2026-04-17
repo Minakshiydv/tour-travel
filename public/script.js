@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ================= BASE URL =================
-  const BASE_URL = window.location.origin;
-
   // ================= MENU =================
   const menuToggle = document.querySelector(".menu-toggle");
   const navMenu = document.querySelector("nav ul");
@@ -24,9 +21,15 @@ document.addEventListener("DOMContentLoaded", () => {
   window.nextStep = function () {
     let inputs = steps[currentStep].querySelectorAll("input, select");
     let valid = true;
-    inputs.forEach(input => { if (!input.value) valid = false; });
 
-    if (!valid) return alert("⚠️ Fill all fields");
+    inputs.forEach(input => {
+      if (!input.value) valid = false;
+    });
+
+    if (!valid) {
+      alert("⚠️ Fill all fields");
+      return;
+    }
 
     currentStep++;
     showStep(currentStep);
@@ -37,15 +40,16 @@ document.addEventListener("DOMContentLoaded", () => {
     showStep(currentStep);
   };
 
-  // ================= PRICE =================
+  // ================= PRICE CALCULATION =================
   function calculatePrice() {
-    const vehicle = parseInt(document.getElementById("vehicle")?.value || 0);
-    const days = parseInt(document.getElementById("days")?.value || 0);
+    const vehicle = Number(document.getElementById("vehicle")?.value || 0);
+    const days = Number(document.getElementById("days")?.value || 0);
 
     const total = vehicle * days;
 
-    if (document.getElementById("finalPrice")) {
-      document.getElementById("finalPrice").innerText = "Final: ₹" + total;
+    const priceBox = document.getElementById("finalPrice");
+    if (priceBox) {
+      priceBox.innerText = "Final: ₹" + total;
     }
 
     return total;
@@ -55,9 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= OTP =================
   window.sendOTP = async function () {
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("email")?.value;
 
-    const res = await fetch(`${BASE_URL}/send-otp`, {
+    if (!email) {
+      alert("Enter email");
+      return;
+    }
+
+    const res = await fetch("/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -66,14 +75,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const data = await res.json();
 
-    if (!res.ok) return alert(data.message || "OTP failed");
+    if (!res.ok) {
+      alert(data.message || "OTP failed");
+      return;
+    }
+
     alert("OTP sent ✅");
   };
 
   window.verifyOTP = async function () {
-    const otp = document.getElementById("otp").value;
+    const otp = document.getElementById("otp")?.value;
 
-    const res = await fetch(`${BASE_URL}/verify-otp`, {
+    const res = await fetch("/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -86,15 +99,19 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("OTP Verified ✅");
       nextStep();
     } else {
-      alert(data.message);
+      alert(data.message || "Wrong OTP ❌");
     }
   };
 
   // ================= BOOKING =================
   window.bookNow = async function () {
-  try {
 
-    const amount = calculatePrice(); // 🔥 ALWAYS calculate first
+    const amount = calculatePrice();
+
+    if (!amount || amount <= 0) {
+      alert("Invalid amount ❌");
+      return;
+    }
 
     const bookingData = {
       firstName: document.getElementById("firstName")?.value || "",
@@ -105,20 +122,17 @@ document.addEventListener("DOMContentLoaded", () => {
       days: document.getElementById("days")?.value || "",
       email: document.getElementById("email")?.value || "",
       paymentMode: document.getElementById("payment")?.value || "",
-      amount: amount   // 🔥 IMPORTANT
+      amount: amount
     };
 
-    const payment = bookingData.paymentMode;
-
-    // ================= VALIDATION =================
     if (!bookingData.firstName || !bookingData.lastName || !bookingData.email || !bookingData.phone) {
-      alert("Please fill all fields ❌");
+      alert("Please fill all required fields ❌");
       return;
     }
 
     // ================= CASH =================
-    if (payment === "cash") {
-      const res = await fetch(`${BASE_URL}/book`, {
+    if (bookingData.paymentMode === "cash") {
+      const res = await fetch("/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData)
@@ -135,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ================= UPI =================
-    if (payment === "upi") {
+    if (bookingData.paymentMode === "upi") {
 
       const options = {
         key: "rzp_live_SbhI7uVjasgo07",
@@ -145,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         handler: async function (response) {
 
-          await fetch(`${BASE_URL}/book`, {
+          await fetch("/book", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -161,15 +175,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       new Razorpay(options).open();
     }
+  };
 
-  } catch (err) {
-    console.log(err);
-    alert("Something went wrong ❌");
-  }
-};
-});
-document.addEventListener("DOMContentLoaded", function () {
-
+  // ================= SWIPER =================
   if (typeof Swiper !== "undefined") {
 
     new Swiper(".heroSwiper", {
@@ -182,15 +190,11 @@ document.addEventListener("DOMContentLoaded", function () {
       autoplay: { delay: 3500, disableOnInteraction: false }
     });
 
-    const reviewEl = document.querySelector(".reviewSwiper");
-
-    if (reviewEl) {
-      new Swiper(".reviewSwiper", {
-        loop: true,
-        spaceBetween: 20,
-        autoplay: { delay: 2000, disableOnInteraction: false }
-      });
-    }
+    new Swiper(".reviewSwiper", {
+      loop: true,
+      spaceBetween: 20,
+      autoplay: { delay: 2000, disableOnInteraction: false }
+    });
   }
 
 });
