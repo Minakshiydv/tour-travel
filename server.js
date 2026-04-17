@@ -154,3 +154,26 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+app.post("/send-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email required ❌" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    req.session.otp = otp;
+    req.session.email = email;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "OTP",
+      text: `Your OTP is ${otp}`
+    });
+
+    res.json({ message: "OTP sent ✅" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
