@@ -198,3 +198,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+window.nextStep = function () {
+
+  let inputs = steps[currentStep].querySelectorAll("input, select");
+  let valid = true;
+
+  inputs.forEach(input => {
+    if (!input.value) valid = false;
+  });
+
+  if (!valid) {
+    alert("⚠️ Fill all fields");
+    return;
+  }
+
+  // 🔥 IMPORTANT FIX
+  calculatePrice();  
+
+  currentStep++;
+  showStep(currentStep);
+};
