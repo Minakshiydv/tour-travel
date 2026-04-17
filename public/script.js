@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    calculatePrice(); // important
+
     currentStep++;
     showStep(currentStep);
   };
@@ -40,31 +42,30 @@ document.addEventListener("DOMContentLoaded", () => {
     showStep(currentStep);
   };
 
-  // ================= PRICE CALCULATION =================
-  function calculatePrice() {
+  // ================= PRICE (ONLY ONE FUNCTION) =================
+  window.calculatePrice = function () {
+
     const vehicle = Number(document.getElementById("vehicle")?.value || 0);
     const days = Number(document.getElementById("days")?.value || 0);
 
     const total = vehicle * days;
 
     const priceBox = document.getElementById("finalPrice");
+
     if (priceBox) {
-      priceBox.innerText = "Final: ₹" + total;
+      priceBox.innerText = `Final Amount: ₹${total}`;
     }
 
     return total;
-  }
+  };
 
-  window.calculatePrice = calculatePrice;
+  document.getElementById("vehicle")?.addEventListener("change", calculatePrice);
+  document.getElementById("days")?.addEventListener("input", calculatePrice);
 
   // ================= OTP =================
   window.sendOTP = async function () {
-    const email = document.getElementById("email")?.value;
 
-    if (!email) {
-      alert("Enter email");
-      return;
-    }
+    const email = document.getElementById("email")?.value;
 
     const res = await fetch("/send-otp", {
       method: "POST",
@@ -74,16 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || "OTP failed");
-      return;
-    }
-
-    alert("OTP sent ✅");
+    alert(data.message || "OTP sent");
   };
 
   window.verifyOTP = async function () {
+
     const otp = document.getElementById("otp")?.value;
 
     const res = await fetch("/verify-otp", {
@@ -103,123 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // ================= BOOKING =================
-  document.addEventListener("DOMContentLoaded", () => {
-
-  // ================= BASE =================
-  const BASE_URL = window.location.origin;
-
-  // ================= MENU =================
-  const menuToggle = document.querySelector(".menu-toggle");
-  const navMenu = document.querySelector("nav ul");
-
-  if (menuToggle && navMenu) {
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-    });
-  }
-
-  // ================= STEP FORM =================
-  let currentStep = 0;
-  const steps = document.querySelectorAll(".step");
-
-  function showStep(n) {
-    steps.forEach((s, i) => s.classList.toggle("active", i === n));
-  }
-
-  window.nextStep = function () {
-
-    let inputs = steps[currentStep].querySelectorAll("input, select");
-    let valid = true;
-
-    inputs.forEach(input => {
-      if (!input.value) valid = false;
-    });
-
-    if (!valid) {
-      alert("⚠️ Fill all fields");
-      return;
-    }
-
-    // 🔥 IMPORTANT PRICE UPDATE
-    calculatePrice();
-
-    currentStep++;
-    showStep(currentStep);
-  };
-
-  window.prevStep = function () {
-    currentStep--;
-    showStep(currentStep);
-  };
-
-  // ================= PRICE =================
-  window.calculatePrice = function () {
-
-  const vehicleEl = document.getElementById("vehicle");
-  const daysEl = document.getElementById("days");
-
-  const vehicle = parseFloat(vehicleEl?.value);
-  const days = parseFloat(daysEl?.value);
-
-  // 🔥 VALIDATION FIX
-  if (isNaN(vehicle) || isNaN(days)) {
-    const priceBox = document.getElementById("finalPrice");
-    if (priceBox) priceBox.innerText = `Final Amount: ₹0`;
-    return 0;
-  }
-
-  const total = vehicle * days;
-
-  const priceBox = document.getElementById("finalPrice");
-
-  if (priceBox) {
-    priceBox.innerText = `Final Amount: ₹${total}`;
-  }
-
-  return total;
-};
-
-  document.getElementById("vehicle")?.addEventListener("change", calculatePrice);
-  document.getElementById("days")?.addEventListener("input", calculatePrice);
-
-  // ================= OTP =================
-  window.sendOTP = async function () {
-    const email = document.getElementById("email")?.value;
-
-    const res = await fetch(`${BASE_URL}/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email })
-    });
-
-    const data = await res.json();
-    alert(data.message || "OTP sent");
-  };
-
-  window.verifyOTP = async function () {
-    const otp = document.getElementById("otp")?.value;
-
-    const res = await fetch(`${BASE_URL}/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ otp })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("OTP Verified ✅");
-      nextStep();
-    } else {
-      alert(data.message);
-    }
-  };
-
   // ================= BOOK NOW =================
- window.bookNow = async function () {
+  window.bookNow = async function () {
 
     const amount = calculatePrice();
 
@@ -245,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ================= CASH =================
+    // CASH
     if (bookingData.paymentMode === "cash") {
       const res = await fetch("/book", {
         method: "POST",
@@ -263,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // ================= UPI =================
+    // UPI
     if (bookingData.paymentMode === "upi") {
 
       const options = {
@@ -292,25 +173,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // ================= SWIPER =================
-  if (typeof Swiper !== "undefined") {
-
-    new Swiper(".heroSwiper", {
-      loop: true,
-      autoplay: { delay: 3000, disableOnInteraction: false }
-    });
-
-    new Swiper(".aboutSwiper", {
-      loop: true,
-      autoplay: { delay: 3500, disableOnInteraction: false }
-    });
-
-    new Swiper(".reviewSwiper", {
-      loop: true,
-      spaceBetween: 20,
-      autoplay: { delay: 2000, disableOnInteraction: false }
-    });
-  }
-
-});  
 });
+if (typeof Swiper !== "undefined") { new Swiper(".heroSwiper", { loop: true, autoplay: { delay: 3000, disableOnInteraction: false } }); new Swiper(".aboutSwiper", { loop: true, autoplay: { delay: 3500, disableOnInteraction: false } }); new Swiper(".reviewSwiper", { loop: true, spaceBetween: 20, autoplay: { delay: 2000, disableOnInteraction: false } }); }
