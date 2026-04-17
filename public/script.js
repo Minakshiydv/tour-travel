@@ -92,20 +92,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= BOOKING =================
   window.bookNow = async function () {
+  try {
+
+    const amount = calculatePrice(); // 🔥 ALWAYS calculate first
 
     const bookingData = {
-      firstName: document.getElementById("firstName").value,
-      lastName: document.getElementById("lastName").value,
-      phone: document.getElementById("phone").value,
-      location: document.getElementById("destination").value,
-      vehicle: document.getElementById("vehicle").value,
-      days: document.getElementById("days").value,
-      email: document.getElementById("email").value,
-      paymentMode: document.getElementById("payment").value
+      firstName: document.getElementById("firstName")?.value || "",
+      lastName: document.getElementById("lastName")?.value || "",
+      phone: document.getElementById("phone")?.value || "",
+      location: document.getElementById("destination")?.value || "",
+      vehicle: document.getElementById("vehicle")?.value || "",
+      days: document.getElementById("days")?.value || "",
+      email: document.getElementById("email")?.value || "",
+      paymentMode: document.getElementById("payment")?.value || "",
+      amount: amount   // 🔥 IMPORTANT
     };
 
     const payment = bookingData.paymentMode;
 
+    // ================= VALIDATION =================
+    if (!bookingData.firstName || !bookingData.lastName || !bookingData.email || !bookingData.phone) {
+      alert("Please fill all fields ❌");
+      return;
+    }
+
+    // ================= CASH =================
     if (payment === "cash") {
       const res = await fetch(`${BASE_URL}/book`, {
         method: "POST",
@@ -119,19 +130,21 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Booking Confirmed ✅");
         location.reload();
       } else {
-        alert(data.message);
+        alert(data.message || "Booking failed ❌");
       }
     }
 
+    // ================= UPI =================
     if (payment === "upi") {
-      const amount = calculatePrice();
 
       const options = {
         key: "rzp_live_SbhI7uVjasgo07",
         amount: amount * 100,
         currency: "INR",
+        name: "Travel Booking",
 
         handler: async function (response) {
+
           await fetch(`${BASE_URL}/book`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -148,26 +161,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
       new Razorpay(options).open();
     }
-  };
 
-  // ================= SWIPER =================
+  } catch (err) {
+    console.log(err);
+    alert("Something went wrong ❌");
+  }
+};
+});
+document.addEventListener("DOMContentLoaded", function () {
+
   if (typeof Swiper !== "undefined") {
 
     new Swiper(".heroSwiper", {
       loop: true,
-      autoplay: { delay: 3000 }
+      autoplay: { delay: 3000, disableOnInteraction: false }
     });
 
     new Swiper(".aboutSwiper", {
       loop: true,
-      autoplay: { delay: 3500 }
+      autoplay: { delay: 3500, disableOnInteraction: false }
     });
 
-    new Swiper(".reviewSwiper", {
-      loop: true,
-      spaceBetween: 20,
-      autoplay: { delay: 2000 }
-    });
+    const reviewEl = document.querySelector(".reviewSwiper");
+
+    if (reviewEl) {
+      new Swiper(".reviewSwiper", {
+        loop: true,
+        spaceBetween: 20,
+        autoplay: { delay: 2000, disableOnInteraction: false }
+      });
+    }
   }
 
 });

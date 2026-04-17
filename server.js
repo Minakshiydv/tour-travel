@@ -118,6 +118,8 @@ app.post("/verify-otp", (req, res) => {
 // ======================
 app.post("/book", async (req, res) => {
   try {
+    console.log("BOOK API HIT:", req.body);
+
     const {
       firstName,
       lastName,
@@ -130,63 +132,55 @@ app.post("/book", async (req, res) => {
       paymentId
     } = req.body;
 
+    // VALIDATION
     if (!firstName || !lastName || !email || !phone) {
       return res.status(400).json({ message: "Missing required fields ❌" });
     }
 
+    // SAVE DB
     const booking = new Booking({
       firstName,
       lastName,
       email,
       phone,
-      location,
-      vehicle,
-      days,
-      paymentMode,
+      location: location || "",
+      vehicle: vehicle || "",
+      days: days || 1,
+      paymentMode: paymentMode || "cash",
       paymentId: paymentId || "CASH"
     });
 
     await booking.save();
 
-    try {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Booking Confirmed 🎉",
-        html: `
-          <h2>🎉 Booking Confirmed</h2>
-          <p><b>Name:</b> ${firstName} ${lastName}</p>
-          <p><b>Phone:</b> ${phone}</p>
-          <p><b>Location:</b> ${location}</p>
-          <p><b>Vehicle:</b> ${vehicle}</p>
-          <p><b>Days:</b> ${days}</p>
-          <p><b>Payment:</b> ${paymentMode}</p>
-        `
-      });
-    } catch (e) {
-      console.log("Email error:", e.message);
+    // EMAIL SAFE (NO CRASH)
+    if (transporter) {
+      try {
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Booking Confirmed 🎉",
+          html: `
+            <h2>🎉 Booking Confirmed</h2>
+            <p><b>Name:</b> ${firstName} ${lastName}</p>
+            <p><b>Phone:</b> ${phone}</p>
+            <p><b>Location:</b> ${location}</p>
+            <p><b>Vehicle:</b> ${vehicle}</p>
+            <p><b>Days:</b> ${days}</p>
+            <p><b>Payment:</b> ${paymentMode}</p>
+          `
+        });
+      } catch (mailErr) {
+        console.log("EMAIL ERROR:", mailErr.message);
+      }
     }
 
     res.json({ message: "Booking saved ✅" });
 
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Booking failed ❌" });
+    console.log("BOOK ERROR:", error);
+    res.status(500).json({
+      message: "Booking failed ❌",
+      error: error.message
+    });
   }
-});
-
-// ======================
-// HOME ROUTE
-// ======================
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// ======================
-// START SERVER
-// ======================
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
