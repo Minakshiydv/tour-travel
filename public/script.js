@@ -174,4 +174,19 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
 });
-if (typeof Swiper !== "undefined") { new Swiper(".heroSwiper", { loop: true, autoplay: { delay: 3000, disableOnInteraction: false } }); new Swiper(".aboutSwiper", { loop: true, autoplay: { delay: 3500, disableOnInteraction: false } }); new Swiper(".reviewSwiper", { loop: true, spaceBetween: 20, autoplay: { delay: 2000, disableOnInteraction: false } }); }
+if (typeof Swiper !== "undefined") 
+  { new Swiper(".heroSwiper",
+     { loop: true, autoplay:
+     { delay: 3000, disableOnInteraction: false } });
+      new Swiper(".aboutSwiper", 
+        { loop: true, autoplay: { delay: 3500, disableOnInteraction: false } });
+         new Swiper(".reviewSwiper", { loop: true, spaceBetween: 20, autoplay:
+           { delay: 2000, disableOnInteraction: false } }); }
+
+
+           
+            window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("intro").classList.add("hide");
+  }, 3000);
+});

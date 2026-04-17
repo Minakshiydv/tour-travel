@@ -218,7 +218,7 @@ h2 {
 
 /* FOOTER */
 footer {
-  background: #008080;
+  background: #28b4f5;
   color: #fff;
   text-align: center;
   padding: 20px 0;
@@ -443,7 +443,7 @@ footer {
 }
 /* FOOTER */
 footer {
-  background: #008080;
+  background-color: #008080;
   color: #fff;
   padding: 40px 0;
   text-align: center;
@@ -679,3 +679,227 @@ header .container {
   align-items: center;
   max-width: 1300px; /* Space thodi badha di hai */
 }
+
+
+#intro {
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, #111, #000);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Content */
+.intro-content {
+  text-align: center;
+  color: white;
+}
+
+/* Logo */
+.logo {
+  font-size: 3rem;
+  letter-spacing: 6px;
+  opacity: 0;
+  transform: scale(0.9);
+  animation: reveal 1.5s ease forwards;
+}
+
+/* Tagline */
+.tagline {
+  margin-top: 10px;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  color: #aaa;
+  opacity: 0;
+  animation: fadeIn 2s ease forwards;
+}
+
+/* Progress Bar */
+.progress-bar {
+  margin: 30px auto 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  animation: load 2.8s ease forwards;
+}
+
+/* Animations */
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes load {
+  0% { width: 0; }
+  100% { width: 200px; }
+}
+
+/* Exit animation */
+#intro.hide {
+  opacity: 0;
+  transform: scale(1.05);
+  transition: all 1s ease;
+  pointer-events: none;
+}
+
+
+
+.btn-primary {
+  position: relative;
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  overflow: hidden;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+/* Glow effect */
+.btn-primary:hover {
+  box-shadow: 0 8px 20px rgba(0, 114, 255, 0.4);
+  transform: translateY(-3px);
+}
+
+/* Click press effect */
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* Shine animation */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.4),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+
+
+/* ===== NAVBAR MAIN STYLE ===== */
+header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.5);
+  transition: 0.3s ease;
+}
+
+header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 8%;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+.logo span {
+  color: #00c6ff;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-size: 15px;
+  position: relative;
+  transition: 0.3s;
+}
+
+nav ul li a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 2px;
+  background: #00c6ff;
+  transition: 0.3s ease;
+}
+
+nav ul li a:hover::after {
+  width: 100%;
+}
+
+nav ul li a:hover {
+  color: #00c6ff;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+}
+
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  nav ul {
+    position: absolute;
+    top: 70px;
+    right: 0;
+    background: rgba(0,0,0,0.9);
+    width: 200px;
+    flex-direction: column;
+    align-items: center;
+    display: none;
+    padding: 20px 0;
+  }
+
+  nav ul.active {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+}
+
+
+
+
+
