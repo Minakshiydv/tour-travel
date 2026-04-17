@@ -104,12 +104,116 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ================= BOOKING =================
+  document.addEventListener("DOMContentLoaded", () => {
+
+  // ================= BASE =================
+  const BASE_URL = window.location.origin;
+
+  // ================= MENU =================
+  const menuToggle = document.querySelector(".menu-toggle");
+  const navMenu = document.querySelector("nav ul");
+
+  if (menuToggle && navMenu) {
+    menuToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active");
+    });
+  }
+
+  // ================= STEP FORM =================
+  let currentStep = 0;
+  const steps = document.querySelectorAll(".step");
+
+  function showStep(n) {
+    steps.forEach((s, i) => s.classList.toggle("active", i === n));
+  }
+
+  window.nextStep = function () {
+
+    let inputs = steps[currentStep].querySelectorAll("input, select");
+    let valid = true;
+
+    inputs.forEach(input => {
+      if (!input.value) valid = false;
+    });
+
+    if (!valid) {
+      alert("⚠️ Fill all fields");
+      return;
+    }
+
+    // 🔥 IMPORTANT PRICE UPDATE
+    calculatePrice();
+
+    currentStep++;
+    showStep(currentStep);
+  };
+
+  window.prevStep = function () {
+    currentStep--;
+    showStep(currentStep);
+  };
+
+  // ================= PRICE =================
+  window.calculatePrice = function () {
+    const vehicle = Number(document.getElementById("vehicle")?.value || 0);
+    const days = Number(document.getElementById("days")?.value || 0);
+
+    const total = vehicle * days;
+
+    const priceBox = document.getElementById("finalPrice");
+
+    if (priceBox) {
+      priceBox.innerText = `Final Amount: ₹${total}`;
+    }
+
+    return total;
+  };
+
+  document.getElementById("vehicle")?.addEventListener("change", calculatePrice);
+  document.getElementById("days")?.addEventListener("input", calculatePrice);
+
+  // ================= OTP =================
+  window.sendOTP = async function () {
+    const email = document.getElementById("email")?.value;
+
+    const res = await fetch(`${BASE_URL}/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+    alert(data.message || "OTP sent");
+  };
+
+  window.verifyOTP = async function () {
+    const otp = document.getElementById("otp")?.value;
+
+    const res = await fetch(`${BASE_URL}/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ otp })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("OTP Verified ✅");
+      nextStep();
+    } else {
+      alert(data.message);
+    }
+  };
+
+  // ================= BOOK NOW =================
   window.bookNow = async function () {
 
     const amount = calculatePrice();
 
     if (!amount || amount <= 0) {
-      alert("Invalid amount ❌");
+      alert("Please select vehicle & days ❌");
       return;
     }
 
@@ -126,13 +230,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (!bookingData.firstName || !bookingData.lastName || !bookingData.email || !bookingData.phone) {
-      alert("Please fill all required fields ❌");
+      alert("Fill all required fields ❌");
       return;
     }
 
+    const payment = bookingData.paymentMode;
+
     // ================= CASH =================
-    if (bookingData.paymentMode === "cash") {
-      const res = await fetch("/book", {
+    if (payment === "cash") {
+      const res = await fetch(`${BASE_URL}/book`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData)
@@ -144,22 +250,22 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Booking Confirmed ✅");
         location.reload();
       } else {
-        alert(data.message || "Booking failed ❌");
+        alert(data.message);
       }
     }
 
     // ================= UPI =================
-    if (bookingData.paymentMode === "upi") {
+    if (payment === "upi") {
 
       const options = {
         key: "rzp_live_SbhI7uVjasgo07",
-        amount: amount * 100,
+        amount: Math.round(amount * 100),
         currency: "INR",
         name: "Travel Booking",
 
         handler: async function (response) {
 
-          await fetch("/book", {
+          await fetch(`${BASE_URL}/book`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -190,31 +296,16 @@ document.addEventListener("DOMContentLoaded", () => {
       autoplay: { delay: 3500, disableOnInteraction: false }
     });
 
-    new Swiper(".reviewSwiper", {
-      loop: true,
-      spaceBetween: 20,
-      autoplay: { delay: 2000, disableOnInteraction: false }
-    });
+    const reviewEl = document.querySelector(".reviewSwiper");
+
+    if (reviewEl) {
+      new Swiper(".reviewSwiper", {
+        loop: true,
+        spaceBetween: 20,
+        autoplay: { delay: 2000, disableOnInteraction: false }
+      });
+    }
   }
 
 });
-window.nextStep = function () {
-
-  let inputs = steps[currentStep].querySelectorAll("input, select");
-  let valid = true;
-
-  inputs.forEach(input => {
-    if (!input.value) valid = false;
-  });
-
-  if (!valid) {
-    alert("⚠️ Fill all fields");
-    return;
-  }
-
-  // 🔥 IMPORTANT FIX
-  calculatePrice();  
-
-  currentStep++;
-  showStep(currentStep);
-};
+});
