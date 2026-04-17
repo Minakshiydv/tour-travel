@@ -30,10 +30,10 @@ app.set("trust proxy", 1);
 
 app.use(session({
   secret: "otp_secret_key_123",
-  resave: true,
+  resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false, // local = false
+    secure: false,
     httpOnly: true
   }
 }));
@@ -44,7 +44,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
-// MONGODB (SAFE)
+// MONGODB
 // ======================
 mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/rdrBooking")
   .then(() => console.log("MongoDB Connected"))
@@ -69,13 +69,55 @@ const transporter = nodemailer.createTransport({
 });
 
 // ======================
-// BOOK API
+// SEND OTP
+// ======================
+app.post("/send-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email required ❌" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    req.session.otp = otp;
+    req.session.email = email;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "OTP Verification",
+      text: `Your OTP is ${otp}`
+    });
+
+    res.json({ message: "OTP sent ✅" });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ======================
+// VERIFY OTP  (FIXED - NO MORE 404)
+// ======================
+app.post("/verify-otp", (req, res) => {
+  const { otp } = req.body;
+
+  if (!req.session.otp) {
+    return res.status(400).json({ success: false, message: "Session expired ❌" });
+  }
+
+  if (parseInt(otp) === req.session.otp) {
+    return res.json({ success: true, message: "Verified ✅" });
+  } else {
+    return res.json({ success: false, message: "Invalid OTP ❌" });
+  }
+});
+
+// ======================
+// BOOKING API
 // ======================
 app.post("/book", async (req, res) => {
   try {
-    console.log("BOOK API HIT");
-    console.log(req.body);
-
     const {
       firstName,
       lastName,
@@ -88,12 +130,10 @@ app.post("/book", async (req, res) => {
       paymentId
     } = req.body;
 
-    // VALIDATION
     if (!firstName || !lastName || !email || !phone) {
       return res.status(400).json({ message: "Missing required fields ❌" });
     }
 
-    // SAVE IN DB
     const booking = new Booking({
       firstName,
       lastName,
@@ -108,10 +148,9 @@ app.post("/book", async (req, res) => {
 
     await booking.save();
 
-    // EMAIL SEND (SAFE)
     try {
       await transporter.sendMail({
-        from: `"Travel Booking" <${process.env.EMAIL_USER}>`,
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "Booking Confirmed 🎉",
         html: `
@@ -121,21 +160,18 @@ app.post("/book", async (req, res) => {
           <p><b>Location:</b> ${location}</p>
           <p><b>Vehicle:</b> ${vehicle}</p>
           <p><b>Days:</b> ${days}</p>
-          <p><b>Payment Mode:</b> ${paymentMode}</p>
+          <p><b>Payment:</b> ${paymentMode}</p>
         `
       });
-    } catch (mailErr) {
-      console.log("EMAIL ERROR:", mailErr.message);
+    } catch (e) {
+      console.log("Email error:", e.message);
     }
 
-    res.json({ message: "Booking saved + email sent ✅" });
+    res.json({ message: "Booking saved ✅" });
 
   } catch (error) {
-    console.log("BOOK ERROR:", error);
-    res.status(500).json({
-      message: "Booking failed ❌",
-      error: error.message
-    });
+    console.log(error);
+    res.status(500).json({ message: "Booking failed ❌" });
   }
 });
 
@@ -153,27 +189,4 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-app.post("/send-otp", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email required ❌" });
-
-    const otp = Math.floor(100000 + Math.random() * 900000);
-
-    req.session.otp = otp;
-    req.session.email = email;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "OTP",
-      text: `Your OTP is ${otp}`
-    });
-
-    res.json({ message: "OTP sent ✅" });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
