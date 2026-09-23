@@ -3,271 +3,1179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luxury Booking</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<title>Book Your Trip | RDR Tour & Travels</title>
+
+<!-- Google Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 
 <style>
+
+/* ================= RESET ================= */
+
 *{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Poppins',sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
 body{
-  height:100vh;
-  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  display:flex;
-  justify-content:center;
-  align-items:center;
+    min-height:100vh;
+    padding:35px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-family:"Poppins",sans-serif;
+    color:#fff;
+
+    background:
+    radial-gradient(circle at 10% 10%,
+    rgba(0,188,255,.16),
+    transparent 30%),
+
+    radial-gradient(circle at 90% 90%,
+    rgba(42,85,255,.14),
+    transparent 30%),
+
+    #030b15;
 }
 
-.container{
-  width:420px;
-  padding:25px;
-  border-radius:20px;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(20px);
-  box-shadow:0 20px 40px rgba(0,0,0,0.5);
-  color:#fff;
+
+/* ================= BACK BUTTON ================= */
+
+.back-home{
+    position:fixed;
+    top:20px;
+    left:20px;
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:10px 17px;
+
+    color:#9db2c4;
+    text-decoration:none;
+
+    font-size:11px;
+
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.09);
+
+    border-radius:30px;
+
+    transition:.3s;
 }
 
-h3{
-  text-align:center;
-  margin-bottom:15px;
-  font-weight:500;
+.back-home:hover{
+    color:#18bdff;
+    border-color:#18bdff;
+    transform:translateX(-3px);
 }
 
-.input-box{
-  position:relative;
-  margin:15px 0;
+
+/* ================= MAIN ================= */
+
+.booking-container{
+    width:100%;
+    max-width:950px;
+
+    display:grid;
+    grid-template-columns:.75fr 1.25fr;
+
+    overflow:hidden;
+
+    background:#07121f;
+
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:28px;
+
+    box-shadow:
+    0 30px 80px rgba(0,0,0,.55);
 }
 
-.input-box input,
-.input-box select{
-  width:100%;
-  padding:12px;
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.3);
-  border-radius:10px;
-  color:#fff;
-  outline:none;
+
+/* ================= LEFT ================= */
+
+.booking-info{
+    padding:45px 35px;
+
+    background:
+    linear-gradient(
+    145deg,
+    #0b3d5b,
+    #061827
+    );
 }
 
-.input-box label{
-  position:absolute;
-  top:50%;
-  left:12px;
-  transform:translateY(-50%);
-  color:#aaa;
-  font-size:14px;
-  pointer-events:none;
-  transition:0.3s;
+.logo-box{
+    width:58px;
+    height:58px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    margin-bottom:25px;
+
+    color:#03101a;
+
+    background:#18bdff;
+
+    border-radius:17px;
+
+    font-size:23px;
 }
 
-.input-box input:focus + label,
-.input-box input:valid + label,
-.input-box select:focus + label{
-  top:-8px;
-  font-size:12px;
-  color:#00f2fe;
+.brand-small{
+    color:#18bdff;
+
+    font-size:9px;
+    font-weight:700;
+
+    letter-spacing:3px;
 }
 
-button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(45deg,#00f2fe,#4facfe);
-  color:#000;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.3s;
+.booking-info h1{
+    margin:12px 0 17px;
+
+    font-size:34px;
+    line-height:1.15;
 }
 
-button:hover{
-  transform:scale(1.05);
+.booking-info h1 span{
+    display:block;
+    color:#18bdff;
 }
 
-.step{display:none;}
-.step.active{display:block;}
+.booking-info p{
+    color:#91a8ba;
 
-.btns{
-  display:flex;
-  gap:10px;
+    font-size:12px;
+    line-height:1.8;
 }
 
-.btns button{
-  width:50%;
+
+/* FEATURES */
+
+.features{
+    margin-top:35px;
+
+    display:flex;
+    flex-direction:column;
+    gap:15px;
 }
 
-.input-box select option {
-  color: #000;
-  background: #fff;
+.feature{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:#a6b8c7;
+
+    font-size:10px;
 }
 
-#totalPrice,#finalPrice{
-  text-align:center;
-  margin-top:10px;
-  color:#00ffae;
-  font-weight:bold;
+.feature i{
+    width:35px;
+    height:35px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:#18bdff;
+
+    background:rgba(24,189,255,.08);
+
+    border:1px solid rgba(24,189,255,.16);
+
+    border-radius:10px;
 }
+
+
+/* ================= RIGHT ================= */
+
+.booking-form{
+    padding:40px;
+
+    background:#050f1c;
+}
+
+.form-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:16px;
+}
+
+.form-top h2{
+    font-size:21px;
+}
+
+.step-count{
+    color:#18bdff;
+    font-size:10px;
+}
+
+
+/* PROGRESS */
+
+.progress-bg{
+    height:4px;
+
+    margin-bottom:30px;
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress{
+    width:20%;
+    height:100%;
+
+    background:
+    linear-gradient(
+    90deg,
+    #18bdff,
+    #487cff
+    );
+}
+
+
+/* ================= STEPS ================= */
+
+.step{
+    display:none;
+}
+
+.step.active{
+    display:block;
+
+    animation:fade .3s ease;
+}
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateX(15px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+
+}
+
+
+.step-heading{
+    margin-bottom:22px;
+}
+
+.step-heading small{
+    color:#18bdff;
+
+    font-size:9px;
+    font-weight:700;
+
+    letter-spacing:2px;
+}
+
+.step-heading h3{
+    margin-top:6px;
+
+    font-size:20px;
+    font-weight:500;
+}
+
+
+/* ================= INPUT ================= */
+
+.field{
+    margin-bottom:17px;
+}
+
+.field label{
+    display:block;
+
+    margin-bottom:7px;
+
+    color:#8ca2b4;
+
+    font-size:9px;
+}
+
+input,
+select{
+
+    width:100%;
+    height:51px;
+
+    padding:0 15px;
+
+    color:#fff;
+
+    background:rgba(255,255,255,.035);
+
+    border:1px solid rgba(255,255,255,.11);
+
+    border-radius:12px;
+
+    outline:none;
+
+    font-size:11px;
+
+    transition:.25s;
+}
+
+input::placeholder{
+    color:#71879b;
+}
+
+input:focus,
+select:focus{
+    border-color:#18bdff;
+
+    box-shadow:
+    0 0 0 3px
+    rgba(24,189,255,.07);
+}
+
+select option{
+    color:#111;
+}
+
+
+/* ================= OTP ================= */
+
+.otp-row{
+    display:grid;
+
+    grid-template-columns:1fr auto;
+
+    gap:10px;
+}
+
+.otp-btn{
+    height:51px;
+
+    padding:0 18px;
+
+    color:#18bdff;
+
+    background:rgba(24,189,255,.07);
+
+    border:1px solid rgba(24,189,255,.22);
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:10px;
+
+    font-weight:600;
+}
+
+.otp-btn:hover{
+    color:#03101a;
+    background:#18bdff;
+}
+
+.verify-btn{
+    width:100%;
+    height:44px;
+
+    margin:5px 0 18px;
+
+    color:#a6b8c7;
+
+    background:rgba(255,255,255,.04);
+
+    border:1px solid rgba(255,255,255,.09);
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:10px;
+}
+
+.verify-btn:hover{
+    color:#18bdff;
+    border-color:#18bdff;
+}
+
+
+/* ================= PRICE ================= */
+
+.price-box{
+    margin:20px 0;
+
+    padding:18px;
+
+    text-align:center;
+
+    background:rgba(24,189,255,.05);
+
+    border:1px solid rgba(24,189,255,.14);
+
+    border-radius:14px;
+}
+
+.price-box small{
+    display:block;
+
+    margin-bottom:5px;
+
+    color:#71879b;
+
+    font-size:8px;
+
+    letter-spacing:2px;
+}
+
+.price-box strong{
+    color:#18bdff;
+
+    font-size:23px;
+}
+
+
+/* ================= BUTTONS ================= */
+
+.buttons{
+    display:flex;
+
+    gap:10px;
+
+    margin-top:25px;
+}
+
+.buttons button{
+    flex:1;
+
+    height:48px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-family:inherit;
+
+    font-size:10px;
+
+    font-weight:600;
+
+    transition:.25s;
+}
+
+.back-btn{
+    color:#91a6b8;
+
+    background:rgba(255,255,255,.04);
+
+    border:1px solid rgba(255,255,255,.1);
+}
+
+.back-btn:hover{
+    color:#fff;
+}
+
+.next-btn{
+    color:#03101a;
+
+    background:
+    linear-gradient(
+    135deg,
+    #18bdff,
+    #487cff
+    );
+
+    border:0;
+
+    box-shadow:
+    0 10px 25px
+    rgba(24,189,255,.14);
+}
+
+.next-btn:hover{
+    transform:translateY(-2px);
+}
+
+
+/* ================= MOBILE ================= */
+
+@media(max-width:800px){
+
+    body{
+        padding:75px 15px 25px;
+        align-items:flex-start;
+    }
+
+    .booking-container{
+        grid-template-columns:1fr;
+    }
+
+    .booking-info{
+        padding:32px 27px;
+    }
+
+    .booking-form{
+        padding:30px 25px;
+    }
+
+    .features{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .feature{
+        flex-direction:column;
+        text-align:center;
+    }
+
+}
+
+
+@media(max-width:500px){
+
+    .booking-info h1{
+        font-size:29px;
+    }
+
+    .features{
+        grid-template-columns:1fr;
+    }
+
+    .feature{
+        flex-direction:row;
+        text-align:left;
+    }
+
+    .booking-form{
+        padding:25px 18px;
+    }
+
+    .otp-row{
+        grid-template-columns:1fr;
+    }
+
+    .otp-btn{
+        width:100%;
+    }
+
+    .form-top h2{
+        font-size:18px;
+    }
+
+}
+
 </style>
 </head>
 
+
 <body>
 
-<div class="container">
 
-<form id="bookingForm">
+<!-- BACK -->
 
-<!-- STEP 1 -->
+<a href="index.html" class="back-home">
+    <i class="fa-solid fa-arrow-left"></i>
+    Back to Home
+</a>
+
+
+<div class="booking-container">
+
+
+<!-- =================================================
+     LEFT INFORMATION
+================================================= -->
+
+<section class="booking-info">
+
+    <div class="logo-box">
+        <i class="fa-solid fa-suitcase-rolling"></i>
+    </div>
+
+    <div class="brand-small">
+        RDR TOUR & TRAVELS
+    </div>
+
+    <h1>
+        Plan Your
+        <span>Perfect Journey.</span>
+    </h1>
+
+    <p>
+        Book your next journey with RDR Tour & Travels.
+        Comfortable vehicles, reliable service and
+        memorable travel experiences.
+    </p>
+
+
+    <div class="features">
+
+        <div class="feature">
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+            <span>Safe & Reliable</span>
+
+        </div>
+
+
+        <div class="feature">
+
+            <i class="fa-solid fa-car"></i>
+
+            <span>Comfortable Vehicles</span>
+
+        </div>
+
+
+        <div class="feature">
+
+            <i class="fa-solid fa-headset"></i>
+
+            <span>Travel Support</span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =================================================
+     BOOKING FORM
+================================================= -->
+
+<section class="booking-form">
+
+
+    <div class="form-top">
+
+        <h2>Trip Booking</h2>
+
+        <span class="step-count">
+            Step <b id="stepNumber">1</b> of 5
+        </span>
+
+    </div>
+
+
+    <div class="progress-bg">
+
+        <div class="progress"
+             id="progressBar">
+        </div>
+
+    </div>
+
+
+    <form id="bookingForm">
+
+
+<!-- =================================================
+     STEP 1
+================================================= -->
+
 <div class="step active">
-  <h3>👤 Your Name</h3>
 
-  <div class="input-box">
-    <input type="text" id="firstName" required>
-    <label>First Name</label>
-  </div>
+    <div class="step-heading">
 
-  <div class="input-box">
-    <input type="text" id="lastName" required>
-    <label>Last Name</label>
-  </div>
+        <small>STEP 01</small>
 
-  <button type="button" onclick="nextStep()">Next ➡️</button>
+        <h3>
+            Tell us your name
+        </h3>
+
+    </div>
+
+
+    <div class="field">
+
+        <label>First Name</label>
+
+        <input
+            type="text"
+            id="firstName"
+            placeholder="Enter first name"
+            required>
+
+    </div>
+
+
+    <div class="field">
+
+        <label>Last Name</label>
+
+        <input
+            type="text"
+            id="lastName"
+            placeholder="Enter last name"
+            required>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button
+            type="button"
+            class="next-btn"
+            onclick="nextStep()">
+
+            Continue
+            <i class="fa-solid fa-arrow-right"></i>
+
+        </button>
+
+    </div>
+
 </div>
 
-<!-- STEP 2 -->
+
+
+<!-- =================================================
+     STEP 2
+================================================= -->
+
 <div class="step">
-  <h3>📞 Contact</h3>
 
-  <div class="input-box">
-    <input type="email" id="email" required>
-    <label>Email</label>
-  </div>
+    <div class="step-heading">
 
-  <!-- FIX: type="button" -->
-   <button type="button" onclick="sendOTP()">Send OTP</button>
-  
+        <small>STEP 02</small>
 
-  <div class="input-box">
-    <input type="text" id="otp" placeholder="Enter OTP">
-  </div>
+        <h3>
+            Verify your contact
+        </h3>
 
-  <!-- FIX: type="button" -->
-  <button type="button" onclick="verifyOTP()">Verify OTP</button>
+    </div>
 
-  <div class="input-box">
-    <input type="tel" id="phone" required>
-    <label>Phone</label>
-  </div>
 
-  <div class="btns">
-    <button type="button" onclick="prevStep()">Back</button>
-    <button type="button" onclick="nextStep()">Next ➡️</button>
-  </div>
+    <div class="field">
+
+        <label>Email Address</label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Enter your email"
+            required>
+
+    </div>
+
+
+    <div class="otp-row">
+
+        <input
+            type="text"
+            id="otp"
+            maxlength="6"
+            placeholder="Enter OTP">
+
+        <button
+            type="button"
+            class="otp-btn"
+            onclick="sendOTP()">
+
+            Send OTP
+
+        </button>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="verify-btn"
+        onclick="verifyOTP()">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        Verify OTP
+
+    </button>
+
+
+    <div class="field">
+
+        <label>Phone Number</label>
+
+        <input
+            type="tel"
+            id="phone"
+            placeholder="Enter phone number"
+            required>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="nextStep()">
+
+            
+            Continue
+            <i class="fa-solid fa-arrow-right"></i>
+
+
+        </button>
+
+    </div>
+
 </div>
 
-<!-- STEP 3 -->
+
+
+<!-- =================================================
+     STEP 3
+================================================= -->
+
 <div class="step">
-  <h3>🌍 Destination</h3>
 
-  <div class="input-box">
-    <select id="destination" required>
-      <option value="">Select Destination</option>
-      <option>Delhi</option>
-      
-      <option>Goa</option>
-      <option>Manali</option>
-      <option>Shimla</option>
-      <option>Jaipur</option>
-      <option>Udaipur</option>
-      <option>Jaisalmer</option>
-      <option>Mumbai</option>
-      <option>Pune</option>
-      <option>Kerala</option>
-      <option>Kochi</option>
-      <option>Munnar</option>
-      <option>Darjeeling</option>
-      <option>Gangtok</option>
-      <option>Leh Ladakh</option>
-      <option>Rishikesh</option>
-      <option>Haridwar</option>
-      <option>Varanasi</option>
-      <option>Agra</option>
-      <option>Taj Mahal</option>
-      <option>Amritsar</option>
-      <option>Chandigarh</option>
-      <option>Bangalore</option>
-      <option>Hyderabad</option>
-      <option>Chennai</option>
-      <option>Kolkata</option>
-      <option>Andaman</option>
-      <option>Lakshadweep</option>
-    </select>
-    <label>Select Destination</label>
-  </div>
+    <div class="step-heading">
 
-  <div class="btns">
-    <button type="button" onclick="prevStep()">Back</button>
-    <button type="button" onclick="nextStep()">Next</button>
-  </div>
+        <small>STEP 03</small>
+
+        <h3>
+            Choose destination
+        </h3>
+
+    </div>
+
+
+    <div class="field">
+
+        <label>Destination</label>
+
+        <select
+            id="destination"
+            required>
+
+            <option value="">
+                Select Destination
+            </option>
+
+            <option>Goa</option>
+            <option>Manali</option>
+            <option>Jaipur</option>
+            <option>Udaipur</option>
+            <option>Mumbai</option>
+            <option>Somnath</option>
+            <option>Rajasthan</option>
+            <option>Gateway of India</option>
+            <option>Delhi</option>
+            <option>Taj Mahal</option>
+            <option>Jodhpur</option>
+            <option>Uttarakhand</option>
+            <option>Jaisalmer</option>
+            <option>Mount Abu</option>
+
+        </select>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="prevStep()">
+
+            <i class="fa-solid fa-arrow-left"></i>
+            Back
+
+        </button>
+
+
+        <button
+            type="button"
+            class="next-btn"
+            onclick="nextStep()">
+
+            Continue
+            <i class="fa-solid fa-arrow-right"></i>
+
+        </button>
+
+    </div>
+
 </div>
 
-<!-- STEP 4 -->
+
+
+<!-- =================================================
+     STEP 4
+================================================= -->
+
 <div class="step">
-  <h3>🚗 Travel Plan</h3>
 
-  <div class="input-box">
-    <select id="vehicle" required>
-      <option value="">Select Vehicle</option>
-      <option value="6000">Innova Crysta ₹6000/day</option>
-      <option value="6500">Hycross ₹6500/day</option>
-      <option value="4000">Swift ₹4000/day</option>
-    </select>
-    <label>Select Vehicle</label>
-  </div>
+    <div class="step-heading">
 
-  <div class="input-box">
-    <input type="number" id="days" required>
-    <label>Days</label>
-  </div>
+        <small>STEP 04</small>
 
-  <div class="btns">
-    <button type="button" onclick="prevStep()">Back</button>
-    <button type="button" onclick="nextStep()">Next</button>
-  </div>
+        <h3>
+            Select travel plan
+        </h3>
+
+    </div>
+
+
+    <div class="field">
+
+        <label>Vehicle</label>
+
+        <select
+            id="vehicle"
+            required>
+
+            <option value="">
+                Select Vehicle
+            </option>
+
+            <option value="6000">
+                Innova Crysta — ₹6000/day
+            </option>
+
+            <option value="6500">
+                Hycross — ₹6500/day
+            </option>
+
+            <option value="4000">
+                Swift — ₹4000/day
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="field">
+
+        <label>Number of Days</label>
+
+        <input
+            type="number"
+            id="days"
+            min="1"
+            placeholder="Enter number of days"
+            required>
+
+    </div>
+
+
+    <div class="price-box">
+
+        <small>
+            ESTIMATED TRAVEL COST
+        </small>
+
+        <strong id="finalPrice">
+            Final Amount: ₹0
+        </strong>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="prevStep()">
+
+            <i class="fa-solid fa-arrow-left"></i>
+            Back
+
+        </button>
+
+
+        <button
+            type="button"
+            class="next-btn"
+            onclick="nextStep()">
+
+            Continue
+            <i class="fa-solid fa-arrow-right"></i>
+
+        </button>
+
+    </div>
+
 </div>
 
-<!-- STEP 5 -->
+
+
+<!-- =================================================
+     STEP 5
+================================================= -->
+
 <div class="step">
-  <h3>💳 Payment</h3>
 
-  <div class="input-box">
-    <select id="payment" required>
-      <option value="">Select Payment Method</option>
-      <option value="upi">UPI / Card</option>
-      <option value="cash">Cash</option>
-    </select>
-    <label>Payment Method</label>
-  </div>
+    <div class="step-heading">
 
-  <p id="finalPrice">Final: ₹0</p>
+        <small>STEP 05</small>
 
-  <div class="btns">
-    <button type="button" onclick="prevStep()">Back</button>
-    <button type="button" onclick="bookNow()">Confirm 🚀</button>
-  </div>
+        <h3>
+            Complete your booking
+        </h3>
+
+    </div>
+
+
+    <div class="field">
+
+        <label>Payment Method</label>
+
+        <select
+            id="payment"
+            required>
+
+            <option value="">
+                Select Payment Method
+            </option>
+
+            <option value="cash">
+                Cash
+            </option>
+
+            <option value="upi">
+                UPI / Card
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="price-box">
+
+        <small>
+            FINAL AMOUNT
+        </small>
+
+        <strong id="bookingAmount">
+            ₹0
+        </strong>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="prevStep()">
+
+            <i class="fa-solid fa-arrow-left"></i>
+            Back
+
+        </button>
+
+
+        <button
+            type="button"
+            class="next-btn"
+            onclick="bookNow()">
+
+            Confirm Booking
+            <i class="fa-solid fa-check"></i>
+
+        </button>
+
+    </div>
+
 </div>
 
-</form>
+
+    </form>
+
+</section>
+
 </div>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- =================================================
+     YOUR EXISTING SCRIPT
+================================================= -->
+
 <script src="script.js"></script>
+
+
+<script>
+
+/*
+   Keep the amount visible on Step 5
+   using your existing calculatePrice()
+*/
+
+const vehicleInput =
+    document.getElementById("vehicle");
+
+const daysInput =
+    document.getElementById("days");
+
+const bookingAmount =
+    document.getElementById("bookingAmount");
+
+
+function updateBookingAmount(){
+
+    const vehicle =
+        Number(vehicleInput?.value || 0);
+
+    const days =
+        Number(daysInput?.value || 0);
+
+    const total = vehicle * days;
+
+    if(bookingAmount){
+
+        bookingAmount.innerText =
+            "₹" + total.toLocaleString("en-IN");
+
+    }
+}
+
+
+vehicleInput?.addEventListener(
+    "change",
+    updateBookingAmount
+);
+
+daysInput?.addEventListener(
+    "input",
+    updateBookingAmount
+);
+
+</script>
+
 
 </body>
 </html>

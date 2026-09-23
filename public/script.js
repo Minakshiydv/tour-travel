@@ -44,12 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= PRICE (ONLY ONE FUNCTION) =================
   window.calculatePrice = function () {
-
     const vehicle = Number(document.getElementById("vehicle")?.value || 0);
     const days = Number(document.getElementById("days")?.value || 0);
-
     const total = vehicle * days;
-
     const priceBox = document.getElementById("finalPrice");
 
     if (priceBox) {
@@ -64,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= OTP =================
   window.sendOTP = async function () {
-
     const email = document.getElementById("email")?.value;
 
     const res = await fetch("/send-otp", {
@@ -79,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.verifyOTP = async function () {
-
     const otp = document.getElementById("otp")?.value;
 
     const res = await fetch("/verify-otp", {
@@ -101,11 +96,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= BOOK NOW =================
   window.bookNow = async function () {
+    console.log("confirm booking");
 
     const amount = calculatePrice();
 
     if (!amount || amount <= 0) {
       alert("Invalid amount ❌");
+      return;
+    }
+
+    const payment = document.getElementById("payment")?.value;
+
+    if (!payment) {
+      alert("Cash ya UPI / Card select ❌");
       return;
     }
 
@@ -117,8 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
       vehicle: document.getElementById("vehicle")?.value || "",
       days: document.getElementById("days")?.value || "",
       email: document.getElementById("email")?.value || "",
-      paymentMode: document.getElementById("payment")?.value || "",
-      amount: amount
+      paymentMode: payment,
+      amount: document.getElementById("bookingAmount")?.innerText || `₹${amount}`
     };
 
     if (!bookingData.firstName || !bookingData.lastName || !bookingData.email || !bookingData.phone) {
@@ -146,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // UPI
     if (bookingData.paymentMode === "upi") {
-
       const options = {
         key: "rzp_live_SbhI7uVjasgo07",
         amount: amount * 100,
@@ -154,7 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
         name: "Travel Booking",
 
         handler: async function (response) {
-
           await fetch("/book", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -172,21 +173,32 @@ document.addEventListener("DOMContentLoaded", () => {
       new Razorpay(options).open();
     }
   };
-
 });
-if (typeof Swiper !== "undefined") 
-  { new Swiper(".heroSwiper",
-     { loop: true, autoplay:
-     { delay: 3000, disableOnInteraction: false } });
-      new Swiper(".aboutSwiper", 
-        { loop: true, autoplay: { delay: 3500, disableOnInteraction: false } });
-         new Swiper(".reviewSwiper", { loop: true, spaceBetween: 20, autoplay:
-           { delay: 2000, disableOnInteraction: false } }); }
 
+if (typeof Swiper !== "undefined") {
+  new Swiper(".heroSwiper", {
+    loop: true,
+    autoplay: { delay: 3000, disableOnInteraction: false }
+  });
 
-           
-            window.addEventListener("load", () => {
+  new Swiper(".aboutSwiper", {
+    loop: true,
+    autoplay: { delay: 3500, disableOnInteraction: false }
+  });
+
+  new Swiper(".reviewSwiper", {
+    loop: true,
+    spaceBetween: 20,
+    autoplay: { delay: 2000, disableOnInteraction: false }
+  });
+}
+
+window.addEventListener("load", () => {
   setTimeout(() => {
-    document.getElementById("intro").classList.add("hide");
+    const intro = document.getElementById("intro");
+
+    if (intro) {
+      intro.classList.add("hide");
+    }
   }, 3000);
 });

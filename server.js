@@ -80,12 +80,24 @@ app.post("/send-otp", async (req, res) => {
 
     req.session.otp = otp;
     req.session.email = email;
+    
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "OTP Verification",
-      text: `Your OTP is ${otp}`
+      from: `"RDR Tour & Travels" <${process.env.EMAIL_USER}>`,
+to: email,
+subject: "Your RDR Tour & Travels verification code",
+text: `Hello,
+
+Your verification code is: ${otp}
+
+This code expires in 10 minutes.
+If you did not request this code, please ignore this email.
+
+RDR Tour & Travels`
+     // from: process.env.EMAIL_USER,
+      //to: email,
+      //subject: "OTP Verification",
+     // text: `Your OTP is ${otp}`
     });
 
     res.json({ message: "OTP sent ✅" });
@@ -153,26 +165,68 @@ app.post("/book", async (req, res) => {
     await booking.save();
 
     // EMAIL SAFE (NO CRASH)
-    if (transporter) {
-      try {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: email,
-          subject: "Booking Confirmed 🎉",
-          html: `
-            <h2>🎉 Booking Confirmed</h2>
-            <p><b>Name:</b> ${firstName} ${lastName}</p>
-            <p><b>Phone:</b> ${phone}</p>
-            <p><b>Location:</b> ${location}</p>
-            <p><b>Vehicle:</b> ${vehicle}</p>
-            <p><b>Days:</b> ${days}</p>
-            <p><b>Payment:</b> ${paymentMode}</p>
-          `
-        });
-      } catch (mailErr) {
-        console.log("EMAIL ERROR:", mailErr.message);
-      }
-    }
+    
+// EMAIL SAFE (NO CRASH)
+if (transporter) {
+  try {
+    const ratePerDay = Number(vehicle) || 0;
+    const totalAmount = ratePerDay * (Number(days) || 0);
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your RDR Tour & Travels Booking Details 🎉",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#243247;">
+          <div style="background:#073b5c;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
+            <h1 style="color:#ffffff;margin:0;">Booking Received 🎉</h1>
+            <p style="color:#d8efff;margin:8px 0 0;">RDR Tour &amp; Travels</p>
+          </div>
+
+          <div style="padding:24px;border:1px solid #e5eaf0;border-radius:0 0 12px 12px;">
+            <p>Hello ${firstName},</p>
+            <p>Thank you for choosing RDR Tour &amp; Travels. We have received your booking details:</p>
+
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Name</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${firstName} ${lastName}</td></tr>
+              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Destination</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${location}</td></tr>
+              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Vehicle rate</b></td><td style="padding:10px;border-bottom:1px solid #eee;">₹${ratePerDay.toLocaleString("en-IN")} / day</td></tr>
+              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Duration</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${days} days</td></tr>
+              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Payment method</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${paymentMode}</td></tr>
+              <tr><td style="padding:12px 10px;"><b>Estimated total</b></td><td style="padding:12px 10px;"><b>₹${totalAmount.toLocaleString("en-IN")}</b></td></tr>
+            </table>
+
+            <p>We’ll contact you at <b>${phone}</b> to discuss the trip arrangements.</p>
+            <p style="margin-top:24px;">Warm regards,<br><b>RDR Tour &amp; Travels</b></p>
+          </div>
+        </div>
+      `
+    });
+  } catch (mailErr) {
+    console.log("EMAIL ERROR:", mailErr.message);
+  }
+}
+   // if (transporter) {
+     // try {
+       // await transporter.sendMail({
+         // from: process.env.EMAIL_USER,
+          //to: email,
+          //subject: "Booking Confirmed 🎉",
+          //html: `
+            //<h2>🎉 Booking Confirmed</h2>
+            //<p><b>Name:</b> ${firstName} ${lastName}</p>
+    //
+    //
+    //        <p><b>Phone:</b> ${phone}</p>
+      //      <p><b>Location:</b> ${location}</p>
+        //    <p><b>Vehicle:</b> ${vehicle}</p>
+          //  <p><b>Days:</b> ${days}</p>
+            //<p><b>Payment:</b> ${paymentMode}</p>
+          //});
+      //} catch (mailErr) {
+      //  console.log("EMAIL ERROR:", mailErr.message);
+     // }
+    //}
 
     res.json({ message: "Booking saved ✅" });
 
