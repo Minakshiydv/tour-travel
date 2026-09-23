@@ -4,6 +4,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 const session = require("express-session");
 const cors = require("cors");
 
@@ -58,19 +60,7 @@ const Booking = require("./models/booking");
 // ======================
 // NODEMAILER
 // ======================
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000
-});
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
@@ -84,19 +74,21 @@ mongoose.connect(process.env.MONGO_URI)
 app.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email required ❌" });
+
+    if (!email) {
+      return res.status(400).json({ message: "Email required ❌" });
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
 
     req.session.otp = otp;
     req.session.email = email;
-    
 
-    await transporter.sendMail({
-      from: `"RDR Tour & Travels" <${process.env.EMAIL_USER}>`,
-to: email,
-subject: "Your RDR Tour & Travels verification code",
-text: `Hello,
+    const { error } = await resend.emails.send({
+      from: "RDR Tour & Travels <onboarding@resend.dev>",
+      to: email,
+      subject: "Your RDR Tour & Travels verification code",
+      text: `Hello,
 
 Your verification code is: ${otp}
 
@@ -104,20 +96,20 @@ This code expires in 10 minutes.
 If you did not request this code, please ignore this email.
 
 RDR Tour & Travels`
-     // from: process.env.EMAIL_USER,
-      //to: email,
-      //subject: "OTP Verification",
-     // text: `Your OTP is ${otp}`
     });
+
+    if (error) {
+      console.error("Resend error:", error);
+      return res.status(500).json({ message: "OTP email nahi bheja ja saka" });
+    }
 
     res.json({ message: "OTP sent ✅" });
 
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
+    console.error("OTP error:", err);
+    res.status(500).json({ message: "OTP bhejne mein error hua" });
   }
 });
-
 // ======================
 // VERIFY OTP  (FIXED - NO MORE 404)
 // ======================
@@ -177,44 +169,33 @@ app.post("/book", async (req, res) => {
     // EMAIL SAFE (NO CRASH)
     
 // EMAIL SAFE (NO CRASH)
-if (transporter) {
-  try {
-    const ratePerDay = Number(vehicle) || 0;
-    const totalAmount = ratePerDay * (Number(days) || 0);
+try {
+  const ratePerDay = Number(vehicle) || 0;
+  const totalAmount = ratePerDay * (Number(days) || 0);
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your RDR Tour & Travels Booking Details 🎉",
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#243247;">
-          <div style="background:#073b5c;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
-            <h1 style="color:#ffffff;margin:0;">Booking Received 🎉</h1>
-            <p style="color:#d8efff;margin:8px 0 0;">RDR Tour &amp; Travels</p>
-          </div>
+  const { error } = await resend.emails.send({
+    from: "RDR Tour & Travels <onboarding@resend.dev>",
+    to: email,
+    subject: "Your RDR Tour & Travels Booking Details",
+    html: `
+      <h2>Booking Received 🎉</h2>
+      <p>Hello ${firstName},</p>
+      <p>Thank you for choosing RDR Tour &amp; Travels.</p>
+      <p><b>Destination:</b> ${location}</p>
+      <p><b>Vehicle rate:</b> ₹${ratePerDay.toLocaleString("en-IN")} / day</p>
+      <p><b>Duration:</b> ${days} days</p>
+      <p><b>Payment method:</b> ${paymentMode}</p>
+      <p><b>Estimated total:</b> ₹${totalAmount.toLocaleString("en-IN")}</p>
+      <p>We’ll contact you at <b>${phone}</b> to discuss trip arrangements.</p>
+      <p>Warm regards,<br>RDR Tour &amp; Travels</p>
+    `
+  });
 
-          <div style="padding:24px;border:1px solid #e5eaf0;border-radius:0 0 12px 12px;">
-            <p>Hello ${firstName},</p>
-            <p>Thank you for choosing RDR Tour &amp; Travels. We have received your booking details:</p>
-
-            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
-              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Name</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${firstName} ${lastName}</td></tr>
-              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Destination</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${location}</td></tr>
-              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Vehicle rate</b></td><td style="padding:10px;border-bottom:1px solid #eee;">₹${ratePerDay.toLocaleString("en-IN")} / day</td></tr>
-              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Duration</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${days} days</td></tr>
-              <tr><td style="padding:10px;border-bottom:1px solid #eee;"><b>Payment method</b></td><td style="padding:10px;border-bottom:1px solid #eee;">${paymentMode}</td></tr>
-              <tr><td style="padding:12px 10px;"><b>Estimated total</b></td><td style="padding:12px 10px;"><b>₹${totalAmount.toLocaleString("en-IN")}</b></td></tr>
-            </table>
-
-            <p>We’ll contact you at <b>${phone}</b> to discuss the trip arrangements.</p>
-            <p style="margin-top:24px;">Warm regards,<br><b>RDR Tour &amp; Travels</b></p>
-          </div>
-        </div>
-      `
-    });
-  } catch (mailErr) {
-    console.log("EMAIL ERROR:", mailErr.message);
+  if (error) {
+    console.error("Booking email error:", error);
   }
+} catch (mailErr) {
+  console.error("Booking email error:", mailErr.message);
 }
    // if (transporter) {
      // try {
