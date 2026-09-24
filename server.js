@@ -87,6 +87,7 @@ app.post("/send-otp", async (req, res) => {
     const { error } = await resend.emails.send({
       from: "RDR Tour & Travels <bookings@rdrtravels.in>",
       to: email,
+      cc: "rdr.tour.travels@gmail.com",
       subject: "Your RDR Tour & Travels verification code",
       text: `Hello,
 
@@ -176,6 +177,7 @@ try {
   const { error } = await resend.emails.send({
     from: "RDR Tour & Travels <bookings@rdrtravels.in>",
     to: email,
+    cc: "rdr.tour.travels@gmail.com",
     subject: "Your RDR Tour & Travels Booking Details",
     html: `
       <h2>Booking Received 🎉</h2>
