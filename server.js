@@ -85,7 +85,7 @@ app.post("/send-otp", async (req, res) => {
     req.session.email = email;
 
     const { error } = await resend.emails.send({
-      from: "RDR Tour & Travels <onboarding@resend.dev>",
+      from: "RDR Tour & Travels <bookings@rdrtravels.in>",
       to: email,
       subject: "Your RDR Tour & Travels verification code",
       text: `Hello,
@@ -174,7 +174,7 @@ try {
   const totalAmount = ratePerDay * (Number(days) || 0);
 
   const { error } = await resend.emails.send({
-    from: "RDR Tour & Travels <onboarding@resend.dev>",
+    from: "RDR Tour & Travels <bookings@rdrtravels.in>",
     to: email,
     subject: "Your RDR Tour & Travels Booking Details",
     html: `
