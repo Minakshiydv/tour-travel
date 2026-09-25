@@ -181,7 +181,7 @@ try {
     subject: "Your RDR Tour & Travels Booking Details",
     html: `
       <h2>Booking Received 🎉</h2>
-      <p>Hello ${firstName},</p>
+      <p>Hello ${firstName}, ${lastName}</p>
       <p>Thank you for choosing RDR Tour &amp; Travels.</p>
       <p><b>Destination:</b> ${location}</p>
       <p><b>Vehicle rate:</b> ₹${ratePerDay.toLocaleString("en-IN")} / day</p>
